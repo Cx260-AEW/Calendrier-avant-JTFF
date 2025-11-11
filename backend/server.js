@@ -375,7 +375,7 @@ app.post('/api/admin/test-discord', async (req, res) => {
     return res.status(401).json({ error: 'Non autorisé' });
   }
   
-  await sendToDiscord();
+  await sendToDiscord(); // ← Cette ligne est ESSENTIELLE !
   res.json({ success: true, message: 'Message envoyé sur Discord' });
 });
 
