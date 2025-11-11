@@ -2,8 +2,11 @@
 // 🧪 MODE TEST - CONFIGURATION
 // ========================================
 const TEST_MODE = true;           // ← Mettre à false pour la production
-const TEST_DAY = 3;               // ← Jour à simuler (1-25)
-const TEST_ALWAYS_OPEN = false;    // ← Toujours ouvert (ignorer horaires)
+const TEST_DAY = 5;               // ← Jour à simuler (1-25)
+const TEST_ALWAYS_OPEN = true;    // ← Toujours ouvert (ignorer horaires)
+// ========================================
+// Les crons 8h et 23h30 fonctionnent TOUJOURS (même en mode test)
+// pour vérifier que l'automatisation marche !
 // ========================================
 
 import express from 'express';
@@ -117,7 +120,8 @@ async function sendMorningDiscordMessage() {
 
   const todayQuestions = questions.filter(q => q.day === currentDay);
   
-  const message = `# 🎄 Jour ${currentDay} - Nouvelles Questions ! 🎄
+  const testPrefix = TEST_MODE ? '🧪 [MODE TEST] ' : '';
+  const message = `${testPrefix}# 🎄 Jour ${currentDay} - Nouvelles Questions ! 🎄
 
 **4 nouvelles questions sont disponibles :**
 
@@ -137,7 +141,7 @@ async function sendMorningDiscordMessage() {
     });
     
     if (response.ok) {
-      console.log(`✅ Message du matin envoyé pour le jour ${currentDay}`);
+      console.log(`✅ [${new Date().toLocaleTimeString()}] Message du matin envoyé pour le jour ${currentDay}`);
     } else {
       console.error(`❌ Erreur Discord (status ${response.status}):`, await response.text());
     }
@@ -170,7 +174,8 @@ async function sendEveningDiscordMessage() {
     };
   }).sort((a, b) => b.score - a.score);
 
-  let message = `# 📊 Résultats du Jour ${currentDay} 📊\n\n`;
+  const testPrefix = TEST_MODE ? '🧪 [MODE TEST] ' : '';
+  let message = `${testPrefix}# 📊 Résultats du Jour ${currentDay} 📊\n\n`;
   
   // Top 3
   message += `## 🏆 Top 3 Général\n`;
@@ -215,7 +220,7 @@ async function sendEveningDiscordMessage() {
     });
     
     if (response.ok) {
-      console.log(`✅ Résultats du soir envoyés pour le jour ${currentDay}`);
+      console.log(`✅ [${new Date().toLocaleTimeString()}] Résultats du soir envoyés pour le jour ${currentDay}`);
     } else {
       console.error(`❌ Erreur Discord (status ${response.status}):`, await response.text());
     }
@@ -234,9 +239,11 @@ Configuration actuelle :
 ${TEST_MODE ? '🧪 MODE TEST ACTIVÉ' : '📅 MODE PRODUCTION'}
 📅 Jour : ${getCurrentDay() || 'Hors période'}
 ⏰ Horaire : ${isOpenHours() ? 'Ouvert' : 'Fermé'}
-🎯 Messages automatiques :
-  • Matin (8h00) : Nouvelles questions
-  • Soir (23h30) : Résultats
+🎯 Messages automatiques programmés :
+  • 🌅 Tous les jours à 8h00 : Nouvelles questions
+  • 🌙 Tous les jours à 23h30 : Résultats
+
+${TEST_MODE ? '⚠️ En mode test, les messages seront préfixés "🧪 [MODE TEST]"' : ''}
 
 Ce message est envoyé depuis le panneau admin. 🎄`;
 
@@ -505,16 +512,20 @@ app.post('/api/admin/test-evening', async (req, res) => {
 });
 
 // ====== CRON JOBS ======
+// Les crons fonctionnent TOUJOURS aux vraies heures (8h et 23h30)
+// même en mode test, pour vérifier que l'automatisation marche !
 
 // Message du matin à 8h00 tous les jours de décembre
 cron.schedule('0 8 * 12 *', () => {
-  console.log('🌅 8h00 - Envoi du message du matin...');
+  const now = new Date();
+  console.log(`🌅 [${now.toLocaleTimeString()}] 8h00 - Envoi automatique du message du matin...`);
   sendMorningDiscordMessage();
 });
 
 // Message du soir à 23h30 tous les jours de décembre
 cron.schedule('30 23 * 12 *', () => {
-  console.log('🌙 23h30 - Envoi des résultats du soir...');
+  const now = new Date();
+  console.log(`🌙 [${now.toLocaleTimeString()}] 23h30 - Envoi automatique des résultats du soir...`);
   sendEveningDiscordMessage();
 });
 
@@ -522,11 +533,16 @@ cron.schedule('30 23 * 12 *', () => {
 async function startServer() {
   await initDataFile();
   app.listen(PORT, () => {
+    const now = new Date();
     console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
-    console.log(`${TEST_MODE ? '🧪 MODE TEST' : '📅 MODE PRODUCTION'}`);
-    console.log(`📅 Jour actuel: ${getCurrentDay()}`);
-    console.log(`⏰ Horaires: ${isOpenHours() ? 'Ouvert' : 'Fermé'}`);
-    console.log(`🔔 Discord webhook configuré: ${DISCORD_WEBHOOK ? 'Oui' : 'Non'}`);
+    console.log(`${TEST_MODE ? '🧪 MODE TEST ACTIVÉ' : '📅 MODE PRODUCTION'}`);
+    console.log(`📅 Jour simulé/actuel: ${getCurrentDay()}`);
+    console.log(`⏰ Horaires quiz: ${isOpenHours() ? 'Ouvert 24h/24' : '8h-23h30'}`);
+    console.log(`🔔 Crons automatiques ACTIFS :`);
+    console.log(`   • 🌅 Message du matin à 8h00`);
+    console.log(`   • 🌙 Message du soir à 23h30`);
+    console.log(`⏱️  Heure actuelle: ${now.toLocaleTimeString()}`);
+    console.log(`${TEST_MODE ? '⚠️  En mode test, les messages Discord seront préfixés "🧪 [MODE TEST]"' : ''}`);
   });
 }
 
