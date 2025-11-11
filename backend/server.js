@@ -430,6 +430,91 @@ app.get('/api/admin/data', async (req, res) => {
   });
 });
 
+// Admin: Obtenir les détails d'un joueur
+app.get('/api/admin/user/:username', async (req, res) => {
+  const { password } = req.query;
+  const { username } = req.params;
+  
+  if (password !== ADMIN_PASSWORD) {
+    return res.status(401).json({ error: 'Non autorisé' });
+  }
+  
+  try {
+    const data = await readData();
+    
+    // Trouver l'utilisateur
+    const user = data.users.find(u => u.username.toLowerCase() === username.toLowerCase());
+    if (!user) {
+      return res.status(404).json({ error: 'Utilisateur non trouvé' });
+    }
+    
+    // Toutes les réponses de l'utilisateur
+    const userAnswers = data.answers.filter(a => a.username.toLowerCase() === username.toLowerCase());
+    
+    // Détails par réponse avec les informations de la question
+    const answersDetails = userAnswers.map(answer => {
+      const question = questions.find(q => q.id === answer.questionId);
+      const isCorrect = answer.answer === question.correctAnswer;
+      
+      return {
+        questionId: question.id,
+        day: question.day,
+        group: question.group,
+        question: question.question,
+        userAnswer: answer.answer,
+        correctAnswer: question.correctAnswer,
+        userAnswerText: question.options[answer.answer],
+        correctAnswerText: question.options[question.correctAnswer],
+        isCorrect,
+        answeredAt: answer.answeredAt
+      };
+    });
+    
+    // Stats par catégorie
+    const statsByCategory = {};
+    ['Navigation aérienne', 'Contrôle aérien', 'Réglementation', 'Cartes aéronautiques'].forEach(category => {
+      const categoryAnswers = answersDetails.filter(a => a.group === category);
+      const correctCount = categoryAnswers.filter(a => a.isCorrect).length;
+      const total = categoryAnswers.length;
+      
+      statsByCategory[category] = {
+        correct: correctCount,
+        total,
+        percentage: total > 0 ? Math.round((correctCount / total) * 100) : 0
+      };
+    });
+    
+    // Stats par jour
+    const statsByDay = {};
+    for (let day = 1; day <= 25; day++) {
+      const dayAnswers = answersDetails.filter(a => a.day === day);
+      if (dayAnswers.length > 0) {
+        const correctCount = dayAnswers.filter(a => a.isCorrect).length;
+        statsByDay[day] = {
+          correct: correctCount,
+          total: dayAnswers.length,
+          percentage: Math.round((correctCount / dayAnswers.length) * 100)
+        };
+      }
+    }
+    
+    // Score total
+    const totalScore = answersDetails.filter(a => a.isCorrect).length;
+    
+    res.json({
+      user,
+      totalScore,
+      totalAnswers: answersDetails.length,
+      answersDetails,
+      statsByCategory,
+      statsByDay
+    });
+  } catch (error) {
+    console.error('Erreur:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 // Admin: Supprimer un utilisateur
 app.delete('/api/admin/user/:username', async (req, res) => {
   const { password } = req.query;
