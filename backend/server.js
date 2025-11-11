@@ -1,3 +1,11 @@
+// ========================================
+// 🧪 MODE TEST - CONFIGURATION
+// ========================================
+const TEST_MODE = true;           // ← Mettre à false pour la production
+const TEST_DAY = 5;               // ← Jour à simuler (1-25)
+const TEST_ALWAYS_OPEN = true;    // ← Toujours ouvert (ignorer horaires)
+// ========================================
+
 import express from 'express';
 import cors from 'cors';
 import cron from 'node-cron';
@@ -44,6 +52,13 @@ async function writeData(data) {
 
 // Obtenir le jour actuel (1-25)
 function getCurrentDay() {
+  // 🧪 MODE TEST
+  if (TEST_MODE) {
+    console.log(`🧪 MODE TEST ACTIVÉ : Jour ${TEST_DAY}`);
+    return TEST_DAY;
+  }
+  
+  // 📅 MODE PRODUCTION
   const now = new Date();
   const december1st = new Date(now.getFullYear(), 11, 1);
   const dayOfMonth = now.getDate();
@@ -56,6 +71,12 @@ function getCurrentDay() {
 
 // Vérifier si on est dans les heures d'ouverture (8h-23h30)
 function isOpenHours() {
+  // 🧪 MODE TEST
+  if (TEST_MODE && TEST_ALWAYS_OPEN) {
+    return true;
+  }
+  
+  // ⏰ MODE PRODUCTION
   const now = new Date();
   const hour = now.getHours();
   const minute = now.getMinutes();
@@ -136,7 +157,6 @@ async function sendEveningDiscordMessage() {
   }
 
   const todayQuestions = questions.filter(q => q.day === currentDay);
-  const todayQuestionsIds = todayQuestions.map(q => q.id);
   
   // Classement
   const leaderboard = data.users.map(user => {
@@ -211,8 +231,9 @@ async function sendTestDiscordMessage() {
 ✅ Le webhook Discord fonctionne correctement !
 
 Configuration actuelle :
+${TEST_MODE ? '🧪 MODE TEST ACTIVÉ' : '📅 MODE PRODUCTION'}
 📅 Jour : ${getCurrentDay() || 'Hors période'}
-⏰ Horaire : ${isOpenHours() ? 'Ouvert (8h-23h30)' : 'Fermé'}
+⏰ Horaire : ${isOpenHours() ? 'Ouvert' : 'Fermé'}
 🎯 Messages automatiques :
   • Matin (8h00) : Nouvelles questions
   • Soir (23h30) : Résultats
@@ -502,8 +523,9 @@ async function startServer() {
   await initDataFile();
   app.listen(PORT, () => {
     console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
+    console.log(`${TEST_MODE ? '🧪 MODE TEST' : '📅 MODE PRODUCTION'}`);
     console.log(`📅 Jour actuel: ${getCurrentDay()}`);
-    console.log(`⏰ Horaires: ${isOpenHours() ? 'Ouvert (8h-23h30)' : 'Fermé'}`);
+    console.log(`⏰ Horaires: ${isOpenHours() ? 'Ouvert' : 'Fermé'}`);
     console.log(`🔔 Discord webhook configuré: ${DISCORD_WEBHOOK ? 'Oui' : 'Non'}`);
   });
 }
