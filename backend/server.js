@@ -248,6 +248,50 @@ app.get('/api/admin/data', async (req, res) => {
   });
 });
 
+// Admin: Supprimer un utilisateur
+app.delete('/api/admin/user/:username', async (req, res) => {
+  const { password } = req.query;
+  const { username } = req.params;
+  
+  if (password !== ADMIN_PASSWORD) {
+    return res.status(401).json({ error: 'Non autorisé' });
+  }
+  
+  try {
+    const data = await readData();
+    
+    // Supprimer l'utilisateur
+    data.users = data.users.filter(u => u.username.toLowerCase() !== username.toLowerCase());
+    
+    // Supprimer toutes ses réponses
+    data.answers = data.answers.filter(a => a.username.toLowerCase() !== username.toLowerCase());
+    
+    await writeData(data);
+    
+    res.json({ success: true, message: `Utilisateur ${username} supprimé` });
+  } catch (error) {
+    console.error('Erreur:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// Admin: Reset complet (supprimer tous les utilisateurs)
+app.post('/api/admin/reset-all', async (req, res) => {
+  const { password } = req.body;
+  
+  if (password !== ADMIN_PASSWORD) {
+    return res.status(401).json({ error: 'Non autorisé' });
+  }
+  
+  try {
+    await writeData({ users: [], answers: [] });
+    res.json({ success: true, message: 'Tous les participants ont été supprimés' });
+  } catch (error) {
+    console.error('Erreur:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 // Envoyer les résultats sur Discord
 async function sendToDiscord() {
   const data = await readData();
