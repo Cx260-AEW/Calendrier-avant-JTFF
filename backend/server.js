@@ -13,8 +13,8 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Configuration
-const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1437838332930560112/3ys2Itxs5xq5eoLt1Rck8yXaONi7YFUoTRSpm5ARnQdmrRSY3m0l704Gci4w0AR2YRqO';
-const ADMIN_PASSWORD = 'ADMIN2025';
+const DISCORD_WEBHOOK = process.env.DISCORD_WEBHOOK || 'https://discord.com/api/webhooks/1437803242389242034/RLiWlxZETGxb1xHRm6UEvI_HMuCX0tq9PLgOS0kZMRYpnfnUgeDfH-m9hD2B8sv6oOVk';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'ADMIN2025';
 const DATA_FILE = path.join(__dirname, 'data.json');
 
 // Middleware
@@ -368,11 +368,6 @@ async function sendToDiscord() {
     console.error('❌ Erreur lors de l\'envoi sur Discord:', error);
   }
 }
-// Tâche cron: Envoyer les résultats à 23h30 chaque jour
-cron.schedule('30 23 * 12 *', () => {
-  console.log('🕐 Envoi des résultats quotidiens...');
-  sendToDiscord();
-});
 
 // Test manuel du webhook Discord
 app.post('/api/admin/test-discord', async (req, res) => {
@@ -382,8 +377,14 @@ app.post('/api/admin/test-discord', async (req, res) => {
     return res.status(401).json({ error: 'Non autorisé' });
   }
   
-  await sendToDiscord(); // ← Cette ligne est ESSENTIELLE !
+  await sendToDiscord();
   res.json({ success: true, message: 'Message envoyé sur Discord' });
+});
+
+// Tâche cron: Envoyer les résultats à 23h30 chaque jour
+cron.schedule('30 23 * 12 *', () => {
+  console.log('🕐 Envoi des résultats quotidiens...');
+  sendToDiscord();
 });
 
 // Démarrer le serveur
