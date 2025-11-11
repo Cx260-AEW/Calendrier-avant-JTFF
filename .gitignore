@@ -1,4 +1,0 @@
- cd advent-quiz/backend
-   railway login
-   railway init
-   railway up
