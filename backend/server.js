@@ -2,7 +2,7 @@
 // 🧪 MODE TEST - CONFIGURATION
 // ========================================
 const TEST_MODE = true;           // ← Mettre à false pour la production
-const TEST_DAY = 5;               // ← Jour à simuler (1-25)
+const TEST_DAY = 6;               // ← Jour à simuler (1-25)
 const TEST_ALWAYS_OPEN = true;    // ← Toujours ouvert (ignorer horaires)
 // ========================================
 
