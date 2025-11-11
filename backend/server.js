@@ -331,15 +331,23 @@ async function sendToDiscord() {
   
   // Top 3
   message += `## 🏆 Top 3 Général\n`;
-  todayLeaderboard.slice(0, 3).forEach((user, index) => {
-    const medals = ['🥇', '🥈', '🥉'];
-    message += `${medals[index]} **${user.username}** - ${user.totalScore} points\n`;
-  });
+  if (todayLeaderboard.length > 0) {
+    todayLeaderboard.slice(0, 3).forEach((user, index) => {
+      const medals = ['🥇', '🥈', '🥉'];
+      message += `${medals[index]} **${user.username}** - ${user.totalScore} points\n`;
+    });
+  } else {
+    message += `Aucun participant pour le moment.\n`;
+  }
   
   message += `\n## 📊 Classement Complet\n`;
-  todayLeaderboard.forEach((user, index) => {
-    message += `${index + 1}. ${user.username} - ${user.totalScore} points\n`;
-  });
+  if (todayLeaderboard.length > 0) {
+    todayLeaderboard.forEach((user, index) => {
+      message += `${index + 1}. ${user.username} - ${user.totalScore} points\n`;
+    });
+  } else {
+    message += `Aucun participant pour le moment.\n`;
+  }
   
   // Réponses du jour (en spoiler)
   message += `\n## ✅ Réponses du Jour ${currentDay}\n`;
@@ -360,7 +368,6 @@ async function sendToDiscord() {
     console.error('❌ Erreur lors de l\'envoi sur Discord:', error);
   }
 }
-
 // Tâche cron: Envoyer les résultats à 23h30 chaque jour
 cron.schedule('30 23 * 12 *', () => {
   console.log('🕐 Envoi des résultats quotidiens...');
