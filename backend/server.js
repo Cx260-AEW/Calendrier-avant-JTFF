@@ -12,9 +12,9 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Configuration;
-const DISCORD_WEBHOOK = process.env.DISCORD_WEBHOOK || 'https://discord.com/api/webhooks/1437838332930560112/3ys2Itxs5xq5eoLt1Rck8yXaONi7YFUoTRSpm5ARnQdmrRSY3m0l704Gci4w0AR2YRqO';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'ADMIN2025';
+// Configuration
+const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1437838332930560112/3ys2Itxs5xq5eoLt1Rck8yXaONi7YFUoTRSpm5ARnQdmrRSY3m0l704Gci4w0AR2YRqO';
+const ADMIN_PASSWORD = 'ADMIN2025';
 const DATA_FILE = path.join(__dirname, 'data.json');
 
 // Middleware
@@ -83,7 +83,164 @@ function calculateUserScore(username, data) {
   return score;
 }
 
-// Routes API
+// ====== FONCTIONS DISCORD ======
+
+// 1. MESSAGE DU MATIN (8h) : Nouvelles questions disponibles
+async function sendMorningDiscordMessage() {
+  const currentDay = getCurrentDay();
+  
+  if (currentDay === 0) {
+    console.log('❌ Pas en décembre, message du matin annulé');
+    return;
+  }
+
+  const todayQuestions = questions.filter(q => q.day === currentDay);
+  
+  const message = `# 🎄 Jour ${currentDay} - Nouvelles Questions ! 🎄
+
+**4 nouvelles questions sont disponibles :**
+
+🧭 **Navigation aérienne** - Question ${todayQuestions[0]?.id}
+🎧 **Contrôle aérien** - Question ${todayQuestions[1]?.id}
+📜 **Réglementation** - Question ${todayQuestions[2]?.id}
+🗺️ **Cartes aéronautiques** - Question ${todayQuestions[3]?.id}
+
+⏰ Vous avez jusqu'à **23h30** pour répondre !
+🎯 Bonne chance à tous ! ✈️`;
+
+  try {
+    const response = await fetch(DISCORD_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: message })
+    });
+    
+    if (response.ok) {
+      console.log(`✅ Message du matin envoyé pour le jour ${currentDay}`);
+    } else {
+      console.error(`❌ Erreur Discord (status ${response.status}):`, await response.text());
+    }
+  } catch (error) {
+    console.error('❌ Erreur réseau Discord:', error.message);
+  }
+}
+
+// 2. MESSAGE DU SOIR (23h30) : Résultats de la journée
+async function sendEveningDiscordMessage() {
+  const data = await readData();
+  const currentDay = getCurrentDay();
+  
+  if (currentDay === 0) {
+    console.log('❌ Pas en décembre, message du soir annulé');
+    return;
+  }
+
+  const todayQuestions = questions.filter(q => q.day === currentDay);
+  const todayQuestionsIds = todayQuestions.map(q => q.id);
+  
+  // Classement
+  const leaderboard = data.users.map(user => {
+    const score = calculateUserScore(user.username, data);
+    const answersCount = data.answers.filter(a => a.username.toLowerCase() === user.username.toLowerCase()).length;
+    
+    return {
+      username: user.username,
+      score,
+      answersCount
+    };
+  }).sort((a, b) => b.score - a.score);
+
+  let message = `# 📊 Résultats du Jour ${currentDay} 📊\n\n`;
+  
+  // Top 3
+  message += `## 🏆 Top 3 Général\n`;
+  if (leaderboard.length >= 3) {
+    message += `🥇 **${leaderboard[0].username}** - ${leaderboard[0].score} points\n`;
+    message += `🥈 **${leaderboard[1].username}** - ${leaderboard[1].score} points\n`;
+    message += `🥉 **${leaderboard[2].username}** - ${leaderboard[2].score} points\n`;
+  } else if (leaderboard.length > 0) {
+    leaderboard.forEach((user, i) => {
+      const medals = ['🥇', '🥈', '🥉'];
+      message += `${medals[i]} **${user.username}** - ${user.score} points\n`;
+    });
+  } else {
+    message += `Aucun participant pour le moment 🎅\n`;
+  }
+  
+  // Classement complet
+  message += `\n## 📋 Classement Complet (${leaderboard.length} participants)\n`;
+  if (leaderboard.length > 0) {
+    leaderboard.slice(0, 10).forEach((user, index) => {
+      message += `${index + 1}. ${user.username} - **${user.score}** points (${user.answersCount} réponses)\n`;
+    });
+    if (leaderboard.length > 10) {
+      message += `... et ${leaderboard.length - 10} autres participants\n`;
+    }
+  }
+  
+  // Réponses (en spoiler)
+  message += `\n## ✅ Réponses du Jour ${currentDay}\n`;
+  todayQuestions.forEach(q => {
+    message += `\n**Q${q.id} (${q.group}):** ${q.question.substring(0, 80)}${q.question.length > 80 ? '...' : ''}\n`;
+    message += `||✓ Réponse: ${q.options[q.correctAnswer]}||\n`;
+  });
+  
+  message += `\n🎄 Rendez-vous demain pour de nouvelles questions ! 🎄`;
+
+  try {
+    const response = await fetch(DISCORD_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: message })
+    });
+    
+    if (response.ok) {
+      console.log(`✅ Résultats du soir envoyés pour le jour ${currentDay}`);
+    } else {
+      console.error(`❌ Erreur Discord (status ${response.status}):`, await response.text());
+    }
+  } catch (error) {
+    console.error('❌ Erreur réseau Discord:', error.message);
+  }
+}
+
+// 3. MESSAGE DE TEST (manuel)
+async function sendTestDiscordMessage() {
+  const message = `# 🧪 TEST DISCORD - Calendrier de l'Avent
+
+✅ Le webhook Discord fonctionne correctement !
+
+Configuration actuelle :
+📅 Jour : ${getCurrentDay() || 'Hors période'}
+⏰ Horaire : ${isOpenHours() ? 'Ouvert (8h-23h30)' : 'Fermé'}
+🎯 Messages automatiques :
+  • Matin (8h00) : Nouvelles questions
+  • Soir (23h30) : Résultats
+
+Ce message est envoyé depuis le panneau admin. 🎄`;
+
+  try {
+    const response = await fetch(DISCORD_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: message })
+    });
+    
+    if (response.ok) {
+      console.log('✅ Message de test Discord envoyé');
+      return true;
+    } else {
+      const errorText = await response.text();
+      console.error(`❌ Erreur Discord (status ${response.status}):`, errorText);
+      return false;
+    }
+  } catch (error) {
+    console.error('❌ Erreur réseau Discord:', error.message);
+    return false;
+  }
+}
+
+// ====== ROUTES API ======
 
 // Obtenir les questions disponibles
 app.get('/api/questions/today', async (req, res) => {
@@ -152,7 +309,6 @@ app.post('/api/answer', async (req, res) => {
     return res.status(404).json({ error: 'Question non trouvée' });
   }
   
-  // Vérifier si déjà répondu
   const existingAnswerIndex = data.answers.findIndex(
     a => a.username.toLowerCase() === username.toLowerCase() && a.questionId === questionId
   );
@@ -161,7 +317,6 @@ app.post('/api/answer', async (req, res) => {
     return res.status(400).json({ error: 'Vous avez déjà répondu à cette question' });
   }
   
-  // Ajouter la réponse
   const newAnswer = {
     username: username.toLowerCase(),
     questionId,
@@ -222,7 +377,6 @@ app.get('/api/admin/data', async (req, res) => {
   
   const data = await readData();
   
-  // Statistiques par question
   const questionStats = questions.map(question => {
     const answers = data.answers.filter(a => a.questionId === question.id);
     const correctAnswers = answers.filter(a => a.answer === question.correctAnswer).length;
@@ -259,13 +413,8 @@ app.delete('/api/admin/user/:username', async (req, res) => {
   
   try {
     const data = await readData();
-    
-    // Supprimer l'utilisateur
     data.users = data.users.filter(u => u.username.toLowerCase() !== username.toLowerCase());
-    
-    // Supprimer toutes ses réponses
     data.answers = data.answers.filter(a => a.username.toLowerCase() !== username.toLowerCase());
-    
     await writeData(data);
     
     res.json({ success: true, message: `Utilisateur ${username} supprimé` });
@@ -275,7 +424,7 @@ app.delete('/api/admin/user/:username', async (req, res) => {
   }
 });
 
-// Admin: Reset complet (supprimer tous les utilisateurs)
+// Admin: Reset complet
 app.post('/api/admin/reset-all', async (req, res) => {
   const { password } = req.body;
   
@@ -292,84 +441,7 @@ app.post('/api/admin/reset-all', async (req, res) => {
   }
 });
 
-// Envoyer les résultats sur Discord
-async function sendToDiscord() {
-  const data = await readData();
-  const currentDay = getCurrentDay();
-  
-  if (currentDay === 0) return;
-  
-  // Questions du jour
-  const todayQuestions = questions.filter(q => q.day === currentDay);
-  const todayQuestionsIds = todayQuestions.map(q => q.id);
-  
-  // Classement du jour
-  const todayLeaderboard = data.users.map(user => {
-    const todayAnswers = data.answers.filter(
-      a => a.username.toLowerCase() === user.username.toLowerCase() && todayQuestionsIds.includes(a.questionId)
-    );
-    
-    let todayScore = 0;
-    todayAnswers.forEach(answer => {
-      const question = questions.find(q => q.id === answer.questionId);
-      if (question && answer.answer === question.correctAnswer) {
-        todayScore++;
-      }
-    });
-    
-    return {
-      username: user.username,
-      todayScore,
-      totalScore: calculateUserScore(user.username, data)
-    };
-  }).filter(u => u.todayScore > 0 || u.totalScore > 0);
-  
-  todayLeaderboard.sort((a, b) => b.totalScore - a.totalScore);
-  
-  // Créer le message Discord
-  let message = `# 🎄 Résultats du Jour ${currentDay} - Calendrier de l'Avent QCM Navigation Aérienne\n\n`;
-  
-  // Top 3
-  message += `## 🏆 Top 3 Général\n`;
-  if (todayLeaderboard.length > 0) {
-    todayLeaderboard.slice(0, 3).forEach((user, index) => {
-      const medals = ['🥇', '🥈', '🥉'];
-      message += `${medals[index]} **${user.username}** - ${user.totalScore} points\n`;
-    });
-  } else {
-    message += `Aucun participant pour le moment.\n`;
-  }
-  
-  message += `\n## 📊 Classement Complet\n`;
-  if (todayLeaderboard.length > 0) {
-    todayLeaderboard.forEach((user, index) => {
-      message += `${index + 1}. ${user.username} - ${user.totalScore} points\n`;
-    });
-  } else {
-    message += `Aucun participant pour le moment.\n`;
-  }
-  
-  // Réponses du jour (en spoiler)
-  message += `\n## ✅ Réponses du Jour ${currentDay}\n`;
-  todayQuestions.forEach(q => {
-    message += `\n**Question ${q.id}:** ${q.question}\n`;
-    message += `||Réponse: ${q.options[q.correctAnswer]}||\n`;
-  });
-  
-  // Envoyer à Discord
-  try {
-    await fetch(DISCORD_WEBHOOK, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content: message })
-    });
-    console.log(`✅ Résultats du jour ${currentDay} envoyés sur Discord`);
-  } catch (error) {
-    console.error('❌ Erreur lors de l\'envoi sur Discord:', error);
-  }
-}
-
-// Test manuel du webhook Discord
+// Admin: Test Discord (manuel)
 app.post('/api/admin/test-discord', async (req, res) => {
   const { password } = req.body;
   
@@ -377,14 +449,52 @@ app.post('/api/admin/test-discord', async (req, res) => {
     return res.status(401).json({ error: 'Non autorisé' });
   }
   
-  await sendToDiscord();
-  res.json({ success: true, message: 'Message envoyé sur Discord' });
+  console.log('🧪 Test Discord demandé depuis l\'admin...');
+  const success = await sendTestDiscordMessage();
+  
+  if (success) {
+    res.json({ success: true, message: 'Message de test envoyé sur Discord !' });
+  } else {
+    res.status(500).json({ success: false, error: 'Erreur lors de l\'envoi sur Discord' });
+  }
 });
 
-// Tâche cron: Envoyer les résultats à 23h30 chaque jour
+// Admin: Forcer message du matin (test)
+app.post('/api/admin/test-morning', async (req, res) => {
+  const { password } = req.body;
+  
+  if (password !== ADMIN_PASSWORD) {
+    return res.status(401).json({ error: 'Non autorisé' });
+  }
+  
+  await sendMorningDiscordMessage();
+  res.json({ success: true, message: 'Message du matin envoyé' });
+});
+
+// Admin: Forcer message du soir (test)
+app.post('/api/admin/test-evening', async (req, res) => {
+  const { password } = req.body;
+  
+  if (password !== ADMIN_PASSWORD) {
+    return res.status(401).json({ error: 'Non autorisé' });
+  }
+  
+  await sendEveningDiscordMessage();
+  res.json({ success: true, message: 'Message du soir envoyé' });
+});
+
+// ====== CRON JOBS ======
+
+// Message du matin à 8h00 tous les jours de décembre
+cron.schedule('0 8 * 12 *', () => {
+  console.log('🌅 8h00 - Envoi du message du matin...');
+  sendMorningDiscordMessage();
+});
+
+// Message du soir à 23h30 tous les jours de décembre
 cron.schedule('30 23 * 12 *', () => {
-  console.log('🕐 Envoi des résultats quotidiens...');
-  sendToDiscord();
+  console.log('🌙 23h30 - Envoi des résultats du soir...');
+  sendEveningDiscordMessage();
 });
 
 // Démarrer le serveur
@@ -393,7 +503,8 @@ async function startServer() {
   app.listen(PORT, () => {
     console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
     console.log(`📅 Jour actuel: ${getCurrentDay()}`);
-    console.log(`🕐 Heures d'ouverture: ${isOpenHours() ? 'Ouvert' : 'Fermé'}`);
+    console.log(`⏰ Horaires: ${isOpenHours() ? 'Ouvert (8h-23h30)' : 'Fermé'}`);
+    console.log(`🔔 Discord webhook configuré: ${DISCORD_WEBHOOK ? 'Oui' : 'Non'}`);
   });
 }
 
