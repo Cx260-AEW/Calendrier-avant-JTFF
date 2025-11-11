@@ -1,5 +1,5 @@
 export const questions = [
-  // JOUR 1 - Une question de chaque groupe
+  // JOUR 1 - Une question de chaque groupe.
   {
     id: 1,
     day: 1,
