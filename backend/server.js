@@ -288,6 +288,15 @@ async function sendEveningDiscordMessage() {
   }
 }
 
+// ====== ROUTE ADMIN : LOGIN (ajoutée) ======
+app.post('/api/admin/login', (req, res) => {
+  const { password } = req.body || {};
+  if (ADMIN_PASSWORD && password === ADMIN_PASSWORD) {
+    return res.json({ success: true });
+  }
+  return res.status(401).json({ error: 'Mot de passe incorrect' });
+});
+
 // ====== ROUTES ADMIN : SETTINGS ======
 app.get('/api/admin/settings', async (req, res) => {
   const { password } = req.query;
@@ -353,6 +362,16 @@ app.post('/api/admin/test-evening', async (req, res) => {
   if (!ADMIN_PASSWORD || password !== ADMIN_PASSWORD) return res.status(401).json({ error: 'Non autorisé' });
   await sendEveningDiscordMessage();
   res.json({ success: true, message: 'Message du soir envoyé' });
+});
+app.post('/api/admin/test-discord', async (req, res) => {
+  const { password } = req.body || {};
+  if (!ADMIN_PASSWORD || password !== ADMIN_PASSWORD) return res.status(401).json({ error: 'Non autorisé' });
+  try {
+    await sendDiscord('# 🧪 Test Discord — webhook OK');
+    res.json({ success: true, message: 'Message de test envoyé' });
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
 });
 app.get('/api/admin/cron-status', async (_req, res) => {
   const data = await readData();
