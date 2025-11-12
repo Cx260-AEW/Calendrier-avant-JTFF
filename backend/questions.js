@@ -1236,7 +1236,8 @@ export const questions = [
       "Dégagez la piste"
     ],
     correctAnswer: 0,
-    explanation: "Cette instruction demande de s'aligner sur la piste mais d'attendre le feu vert pour décoller. Source : OACI Doc 4444."
+    explanation: "Cette instruction demande de s'aligner sur la piste mais d'attendre le feu vert pour décoller. Source : OACI Doc 4444.",
+    image: "/images/Q82.png"
   },
   {
     id: 83,
@@ -1250,7 +1251,8 @@ export const questions = [
       "L'altitude vraie"
     ],
     correctAnswer: 0,
-    explanation: "Les FL utilisent le calage altimétrique standard de 1013,25 hPa. Source : OACI Annexe 5."
+    explanation: "Les FL utilisent le calage altimétrique standard de 1013,25 hPa. Source : OACI Annexe 5.",
+    image: "/images/Q83.png"
   },
   {
     id: 84,
@@ -1296,7 +1298,8 @@ export const questions = [
       "Roulez lentement"
     ],
     correctAnswer: 0,
-    explanation: "Instruction de libérer la piste dès que possible. Source : OACI Doc 4444."
+    explanation: "Instruction de libérer la piste dès que possible. Source : OACI Doc 4444.",
+    image: "/images/Q86.png"
   },
   {
     id: 87,
