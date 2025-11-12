@@ -596,6 +596,9 @@ app.post('/api/admin/test-evening', async (req, res) => {
   res.json({ success: true, message: 'Message du soir envoyé' });
 });
 
+
+app.use('/api/images', express.static(path.join(__dirname, 'images')));
+
 // ====== CRON JOBS ======
 // Les crons fonctionnent TOUJOURS aux vraies heures (8h et 23h30)
 // même en mode test, pour vérifier que l'automatisation marche !
