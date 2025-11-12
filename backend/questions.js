@@ -38,7 +38,7 @@ export const questions = [
     id: 3,
     day: 1,
     group: "📜Réglementation",
-    question: "Quelle est la visibilité minimale en vol VFR de classe G en dessous de 3000 ft AMSL ?",
+    question: "En règle générale quelle est la visibilité minimale en vol VFR de classe G en dessous de 3000 ft AMSL ?",
     options: [
       "1 km",
       "3 km",
@@ -51,7 +51,7 @@ export const questions = [
   {
     id: 4,
     day: 1,
-    group: "🗺️-Cartes aéronautiques",
+    group: "🗺️ Cartes aéronautiques",
     question: "Sur une carte OACI 1:500 000, 1 cm représente :",
     options: [
       "1 NM",
@@ -78,7 +78,7 @@ export const questions = [
       "Impossible à déterminer"
     ],
     correctAnswer: 1,
-    explanation: "💬Si la déclinaison est Est, on soustrait la valeur à la route vraie pour obtenir la route magnétique. \n 📚Source : Manuel de navigation DGAC."
+    explanation: "💬Si la déclinaison est Est, on soustrait la valeur à la route vraie pour obtenir la route magnétique, et si la déclinaison est Ouest on ajoute \n 📚Source : Manuel de navigation DGAC."
   },
   {
     id: 6,
@@ -111,7 +111,7 @@ export const questions = [
   {
     id: 8,
     day: 2,
-    group: "🗺️-Cartes aéronautiques",
+    group: "🗺️ Cartes aéronautiques",
     question: "Les zones P, R, D signifient respectivement :",
     options: [
       "Prohibited, Restricted, Danger",
@@ -171,7 +171,7 @@ export const questions = [
   {
     id: 12,
     day: 3,
-    group: "🗺️-Cartes aéronautiques",
+    group: "🗺️ Cartes aéronautiques",
     question: "Une zone R est :",
     options: [
       "Interdite en tout temps",
@@ -218,7 +218,7 @@ export const questions = [
     id: 15,
     day: 4,
     group: "📜Réglementation",
-    question: "Un plan de vol VFR doit être déposé :",
+    question: "En France il est recommandé de deposer un plan de vol VFR :",
     options: [
       "Uniquement pour les vols internationaux",
       "Pour tout vol dépassant 30 km",
@@ -226,12 +226,12 @@ export const questions = [
       "Pour tous les vols VFR"
     ],
     correctAnswer: 2,
-    explanation: "💬Le dépôt de plan de vol VFR est obligatoire pour les vols de plus de 100 km ou internationaux. \n 📚Source : SERA.4001."
+    explanation: "💬La DGAC recommande le dépôt de plan de vol pour tout vol de plus de 100 km. \n 📚Source : DGAC."
   },
   {
     id: 16,
     day: 4,
-    group: "🗺️-Cartes aéronautiques",
+    group: "🗺️ Cartes aéronautiques",
     question: "Les lignes bleues épaisses sur une carte VFR indiquent :",
     options: [
       "Des routes",
@@ -291,16 +291,16 @@ export const questions = [
   {
     id: 20,
     day: 5,
-    group: "🗺️-Cartes aéronautiques",
+    group: "🗺️ Cartes aéronautiques",
     question: "Un aérodrome non contrôlé est indiqué par :",
     options: [
-      "Un cercle bleu",
+      "Un cercle bleu vide",
       "Un cercle bleu plein",
       "Un carré rouge",
-      "Un cercle bleu vide"
+      "Un cercle rouge"
     ],
     correctAnswer: 0,
-    explanation: "💬Sur une carte OACI, un cercle bleu simple indique un aérodrome non contrôlé ou avec un agent AFIS. \n 📚Source : Légende carte OACI France."
+    explanation: "💬Sur une carte OACI, un cercle bleu vide indique un aérodrome non contrôlé ou avec un agent AFIS. \n 📚Source : Légende carte OACI France."
   },
 
   // ========================================
@@ -351,16 +351,16 @@ export const questions = [
   {
     id: 24,
     day: 6,
-    group: "🗺️-Cartes aéronautiques",
-    question: "Les altitudes minimales de sécurité sont indiquées sur :",
+    group: "🗺️ Cartes aéronautiques",
+    question: "La Grid MORA fournit :",
     options: [
-      "Les cartes IFR uniquement",
-      "Les cartes IFR et VFR",
-      "Les cartes VAC",
-      "Les cartes météo"
+      "L’altitude minimale pour suivre une procédure d’approche",
+      "L’altitude minimale de sécurité dans une grille de 1°×1°",
+      "L’altitude de transition d’un pays",
+      "La hauteur minimale de survol d’une ville"
     ],
     correctAnswer: 1,
-    explanation: "💬Les altitudes minimales de sécurité figurent sur les cartes IFR (ENR 6) pour éviter les obstacles. \n 📚Source : AIP France ENR 6."
+    explanation: "💬La Grid MORA pour Minimum Off-Route Altitude donne une altitude minimale de sécurité pour chaque grille de latitude/longitude. \n 📚Source : OACI Doc 8168."
   },
 
   // ========================================
@@ -411,7 +411,7 @@ export const questions = [
   {
     id: 28,
     day: 7,
-    group: "🗺️-Cartes aéronautiques",
+    group: "🗺️ Cartes aéronautiques",
     image: true,
     question: "Cette flèche de vent indique :",
     options: [
@@ -472,7 +472,7 @@ export const questions = [
   {
     id: 32,
     day: 8,
-    group: "🗺️-Cartes aéronautiques",
+    group: "🗺️ Cartes aéronautiques",
     image: true,
     question: "Sur une carte VAC, le cercle bleu correspond à :",
     options: [
@@ -521,7 +521,7 @@ export const questions = [
     id: 35,
     day: 9,
     group: "📜Réglementation",
-    question: "Le vol à vue (VFR) est interdit :",
+    question: "En Europe, Le vol à vue (VFR) est interdit :",
     options: [
       "Au-dessus du FL195",
       "Au-dessus du FL245",
@@ -534,7 +534,7 @@ export const questions = [
   {
     id: 36,
     day: 9,
-    group: "🗺️-Cartes aéronautiques",
+    group: "🗺️ Cartes aéronautiques",
     question: "La déclinaison magnétique est indiquée sur les cartes :",
     options: [
       "IFR uniquement",
@@ -589,12 +589,12 @@ export const questions = [
       "Un GPS"
     ],
     correctAnswer: 1,
-    explanation: "💬La radio VHF est obligatoire en espace contrôlé. \n 📚Source : SERA.3215."
+    explanation: "💬La radio VHF est obligatoire en espace contrôlé. \n 📚Source : SERA.5005."
   },
   {
     id: 40,
     day: 10,
-    group: "🗺️-Cartes aéronautiques",
+    group: "🗺️ Cartes aéronautiques",
     question: "Que signifie MEA :",
     options: [
       "Mer Méditerranée",
@@ -654,7 +654,7 @@ export const questions = [
   {
     id: 44,
     day: 11,
-    group: "🗺️-Cartes aéronautiques",
+    group: "🗺️ Cartes aéronautiques",
     image: true,
     question: "Sur cette carte, la flèche bleue signifie :",
     options: [
@@ -715,7 +715,7 @@ export const questions = [
   {
     id: 48,
     day: 12,
-    group: "🗺️-Cartes aéronautiques",
+    group: "🗺️ Cartes aéronautiques",
     question: "Une TMA est représentée par :",
     options: [
       "Des lignes rouges",
@@ -775,7 +775,7 @@ export const questions = [
   {
     id: 52,
     day: 13,
-    group: "🗺️-Cartes aéronautiques",
+    group: "🗺️ Cartes aéronautiques",
     question: "Le relief est indiqué sur une carte par :",
     options: [
       "Des lignes de niveau et des couleurs",
@@ -808,7 +808,7 @@ export const questions = [
     id: 54,
     day: 14,
     group: "🎧Contrôle aérien",
-    question: "Une clearance donner par un ATC est :",
+    question: "Une clearance donnée par un ATC est :",
     options: [
       "Une autorisation",
       "Une demande d'information",
@@ -835,7 +835,7 @@ export const questions = [
   {
     id: 56,
     day: 14,
-    group: "🗺️-Cartes aéronautiques",
+    group: "🗺️ Cartes aéronautiques",
     question: "La hauteur d'un relief est indiquée sur une carte par :",
     options: [
       "Un point noir suivi de la hauteur",
@@ -895,7 +895,7 @@ export const questions = [
   {
     id: 60,
     day: 15,
-    group: "🗺️-Cartes aéronautiques",
+    group: "🗺️ Cartes aéronautiques",
     question: "Les fréquences ATIS et TWR figurent sur :",
     options: [
       "La carte VAC",
@@ -955,7 +955,7 @@ export const questions = [
   {
     id: 64,
     day: 16,
-    group: "🗺️-Cartes aéronautiques",
+    group: "🗺️ Cartes aéronautiques",
     question: "Sur une carte d'approche à vue, les itinéraires hélicoptère sont :",
     options: [
       "Indiqués en noir",
@@ -1015,7 +1015,7 @@ export const questions = [
   {
     id: 68,
     day: 17,
-    group: "🗺️-Cartes aéronautiques",
+    group: "🗺️ Cartes aéronautiques",
     image: true,
     question: "Sur la carte VAC de LFMT, que faire en cas de panne radio avant le décollage ?",
     options: [
@@ -1076,7 +1076,7 @@ export const questions = [
   {
     id: 72,
     day: 18,
-    group: "🗺️-Cartes aéronautiques",
+    group: "🗺️ Cartes aéronautiques",
     question: "Un aérodrome fermé est identifié par :",
     options: [
       "Un cercle noir avec une croix",
@@ -1136,7 +1136,7 @@ export const questions = [
   {
     id: 76,
     day: 19,
-    group: "🗺️-Cartes aéronautiques",
+    group: "🗺️ Cartes aéronautiques",
     question: "L'altitude du terrain (élévation) figure :",
     options: [
       "En pieds sur la VAC",
@@ -1196,7 +1196,7 @@ export const questions = [
   {
     id: 80,
     day: 20,
-    group: "🗺️-Cartes aéronautiques",
+    group: "🗺️ Cartes aéronautiques",
     question: "Les obstacles supérieurs à 100 m sont représentés :",
     options: [
       "Par un symbole d'antenne",
@@ -1237,7 +1237,7 @@ export const questions = [
       "Dégagez la piste"
     ],
     correctAnswer: 0,
-    explanation: "💬Cette instruction demande de s'aligner sur la piste mais d'attendre le feu vert pour décoller. \n 📚Source : OACI Doc 4444.",
+    explanation: "💬Cette instruction demande de s'aligner sur la piste mais d'attendre le feu vert pour décoller. \n 📚Source : OACI Doc 4444."
   },
   {
     id: 83,
@@ -1251,12 +1251,12 @@ export const questions = [
       "L'altitude vraie"
     ],
     correctAnswer: 0,
-    explanation: "💬Les FL utilisent le calage altimétrique standard de 1013,25 hPa. \n 📚Source : OACI Annexe 5.",
+    explanation: "💬Les FL utilisent le calage altimétrique standard de 1013,25 hPa. \n 📚Source : OACI Annexe 5."
   },
   {
     id: 84,
     day: 21,
-    group: "🗺️-Cartes aéronautiques",
+    group: "🗺️ Cartes aéronautiques",
     question: "Les zones militaires actives sont :",
     options: [
       "Publiées par NOTAM",
@@ -1277,13 +1277,13 @@ export const questions = [
     group: "🧭Navigation aérienne",
     question: "Le calcul du temps de vol se fait à partir de :",
     options: [
-      "La vitesse vraie",
-      "La vitesse indiquée",
-      "La vitesse sol",
-      "La vitesse de croisière prévue"
+      "Distance / La vitesse vraie",
+      "Distance / La vitesse indiquée",
+      "Distance / La vitesse sol",
+      "Distance / La vitesse de croisière moyenne"
     ],
-    correctAnswer: 0,
-    explanation: "💬Le temps de vol estimé découle de la vitesse vraie corrigée du vent. \n 📚Source : DGAC – Manuel du pilote privé."
+    correctAnswer: 2,
+    explanation: "💬Le temps de vol estimé découle de la vitesse sol . \n 📚Source : DGAC – Manuel du pilote privé."
   },
   {
     id: 86,
@@ -1297,7 +1297,7 @@ export const questions = [
       "Roulez lentement"
     ],
     correctAnswer: 0,
-    explanation: "💬Instruction de libérer la piste dès que possible. \n 📚Source : OACI Doc 4444.",
+    explanation: "💬Instruction de libérer la piste dès que possible. \n 📚Source : OACI Doc 4444."
   },
   {
     id: 87,
@@ -1311,12 +1311,12 @@ export const questions = [
       "L'altitude maximale VFR"
     ],
     correctAnswer: 0,
-    explanation: "💬Au-dessus de l'altitude de transition, les altitudes sont exprimées en niveaux de vol (FL). \n 📚Source : OACI Annexe 2."
+    explanation: "💬Au-dessus de l'altitude de transition, les altitudes sont exprimées en niveaux de vol (FL). \n 📚Source : AIP France ENR 1.7."
   },
   {
     id: 88,
     day: 22,
-    group: "🗺️-Cartes aéronautiques",
+    group: "🗺️ Cartes aéronautiques",
     question: "Les routes VFR obligatoires avec contact radio sont tracées en :",
     options: [
       "Ligne noire pleine (____)",
@@ -1371,12 +1371,12 @@ export const questions = [
       "L'altitude de croisière"
     ],
     correctAnswer: 0,
-    explanation: "💬C'est le FL le plus bas disponible après l'altitude de transition. \n 📚Source : OACI Annexe 2."
+    explanation: "💬C'est le FL le plus bas disponible après l'altitude de transition. \n 📚Source : AIP France ENR 1.7."
   },
   {
     id: 92,
     day: 23,
-    group: "🗺️-Cartes aéronautiques",
+    group: "🗺️ Cartes aéronautiques",
     question: "Les points de report VFR sont identifiés par :",
     options: [
       "Une lettre dans un cercle à fond blanc et contour noir",
@@ -1431,12 +1431,12 @@ export const questions = [
       "Une zone d'attente"
     ],
     correctAnswer: 0,
-    explanation: "💬C'est la zone où l'on passe du calage QNH au calage standard 1013 hPa. \n 📚Source : OACI Annexe 2."
+    explanation: "💬C'est la zone où l'on passe du calage QNH au calage standard 1013 hPa. \n 📚Source : AIP France ENR 1.7."
   },
   {
     id: 96,
     day: 24,
-    group: "🗺️-Cartes aéronautiques",
+    group: "🗺️ Cartes aéronautiques",
     question: "Sur la carte OACI, \"LF-R\" suivi d'un numéro désigne :",
     options: [
       "Une zone restreinte",
@@ -1496,7 +1496,7 @@ export const questions = [
   {
     id: 100,
     day: 25,
-    group: "🗺️-Cartes aéronautiques",
+    group: "🗺️ Cartes aéronautiques",
     question: "Les coordonnées sur les cartes aéronautiques sont exprimées en :",
     options: [
       "Degrés, minutes et secondes",
