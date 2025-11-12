@@ -88,24 +88,43 @@ async function writeConfig(config) {
 // 📅 GESTION DU CALENDRIER
 // ========================================
 
-function getCurrentDay() {
-  const config = readConfig();
+async function getCurrentDay() {
+  const config = await readConfig();
+  
+  // Normaliser les dates à 00:00:00 pour éviter les bugs d'heures
   const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  
   const startDate = new Date(config.startDate);
+  startDate.setHours(0, 0, 0, 0);
+  
   const endDate = new Date(config.endDate);
+  endDate.setHours(23, 59, 59, 999);
   
   // Vérifier si on est dans la période du calendrier
-  if (now < startDate || now > endDate) {
-    return 0; // Hors période
+  if (now < startDate) {
+    console.log('❌ Calendrier pas encore commencé');
+    return 0; // Pas encore commencé
   }
   
-  // Calculer le jour actuel (1-25)
+  if (now > endDate) {
+    console.log('❌ Calendrier terminé');
+    return 0; // Terminé
+  }
+  
+  // Calculer le nombre de jours écoulés depuis le début
   const diffTime = now.getTime() - startDate.getTime();
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  
+  // Le jour actuel = nombre de jours écoulés + 1
   const currentDay = diffDays + 1;
   
   // S'assurer que le jour est entre 1 et 25
-  return Math.max(1, Math.min(currentDay, 25));
+  const finalDay = Math.max(1, Math.min(currentDay, 25));
+  
+  console.log(`📅 Calcul du jour: Date=${now.toISOString().split('T')[0]}, Début=${startDate.toISOString().split('T')[0]}, Jours écoulés=${diffDays}, Jour=${finalDay}/25`);
+  
+  return finalDay;
 }
 
 async function isOpenHours() {
@@ -247,7 +266,7 @@ async function sendDiscordMessage(content, embeds = []) {
 async function sendMorningAnnouncement() {
   console.log('🌅 Envoi du message du matin...');
   
-  const currentDay = getCurrentDay();
+  const currentDay = await getCurrentDay();
   
   if (currentDay === 0) {
     console.log('❌ Hors période du calendrier');
@@ -277,7 +296,7 @@ async function sendMorningAnnouncement() {
 async function sendEveningResults() {
   console.log('🌙 Envoi des résultats du soir...');
   
-  const currentDay = getCurrentDay();
+  const currentDay = await getCurrentDay();
   
   if (currentDay === 0) {
     console.log('❌ Hors période du calendrier');
@@ -380,7 +399,7 @@ app.get('/api/health', (req, res) => {
 
 // Obtenir les questions du jour
 app.get('/api/questions/today', async (req, res) => {
-  const currentDay = getCurrentDay();
+  const currentDay = await getCurrentDay();
   
   if (currentDay === 0) {
     return res.json({ 
@@ -558,7 +577,7 @@ app.post('/api/admin/test-evening', async (req, res) => {
 // Obtenir les statistiques
 app.get('/api/admin/stats', async (req, res) => {
   const data = await readData();
-  const currentDay = getCurrentDay();
+  const currentDay = await getCurrentDay();
   
   const stats = {
     totalUsers: data.users.length,
@@ -587,14 +606,15 @@ async function startServer() {
     await setupCrons();
     
     // Démarrer le serveur
-    app.listen(PORT, () => {
+    app.listen(PORT, async () => {
+      const day = await getCurrentDay();
       console.log('');
       console.log('🎄 ========================================');
       console.log('   CALENDRIER DE L\'AVENT - SERVEUR ACTIF');
       console.log('   ========================================');
       console.log('');
       console.log(`   🌐 Port : ${PORT}`);
-      console.log(`   📅 Jour actuel : ${getCurrentDay()}/25`);
+      console.log(`   📅 Jour actuel : ${day}/25`);
       console.log('');
       console.log('   ⏰ Automatisation activée :');
       console.log('      • Matin : Annonce nouvelles questions');
