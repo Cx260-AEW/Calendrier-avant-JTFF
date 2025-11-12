@@ -1,0 +1,81 @@
+╔══════════════════════════════════════════════════════════════╗
+║                                                              ║
+║         🎨 FRONTEND PRÊT POUR NETLIFY                       ║
+║                                                              ║
+╚══════════════════════════════════════════════════════════════╝
+
+✅ CE DOSSIER EST MODIFIÉ POUR UTILISER TON BACKEND RAILWAY
+
+URL Backend : https://calendrier-avant-jtff-production.up.railway.app
+
+═══════════════════════════════════════════════════════════════
+
+🚀 COMMENT DÉPLOYER SUR NETLIFY
+
+OPTION 1 : Drag & Drop (PLUS SIMPLE) ⭐
+
+1️⃣  Ouvre un terminal dans ce dossier
+
+2️⃣  Installe les dépendances :
+    npm install
+
+3️⃣  Build le projet :
+    npm run build
+
+4️⃣  Va sur : https://app.netlify.com/drop
+
+5️⃣  Glisse le dossier "dist" qui vient d'être créé
+
+6️⃣  ✅ TON SITE EST EN LIGNE !
+
+═══════════════════════════════════════════════════════════════
+
+OPTION 2 : Via GitHub
+
+1️⃣  Upload ce dossier "frontend-netlify" sur GitHub
+    (renomme-le en "frontend")
+
+2️⃣  Sur Netlify : "New site from Git"
+
+3️⃣  Connecte GitHub
+
+4️⃣  Configuration :
+    • Base directory : frontend
+    • Build command : npm run build
+    • Publish directory : frontend/dist
+
+5️⃣  Environment variables :
+    VITE_API_URL = https://calendrier-avant-jtff-production.up.railway.app
+
+6️⃣  Deploy !
+
+═══════════════════════════════════════════════════════════════
+
+⚙️ FICHIERS MODIFIÉS
+
+✅ src/config.js             → Configuration API
+✅ src/App.jsx               → Utilise Railway
+✅ src/pages/QuizPage.jsx    → Utilise Railway
+✅ src/pages/LeaderboardPage.jsx → Utilise Railway
+✅ src/pages/AdminPage.jsx   → Utilise Railway
+✅ public/_redirects         → Routing Netlify
+✅ .env                      → Variables d'environnement
+
+═══════════════════════════════════════════════════════════════
+
+🔧 SI TU VEUX TESTER EN LOCAL
+
+1. npm install
+2. npm run dev
+3. Ouvre http://localhost:3000
+
+═══════════════════════════════════════════════════════════════
+
+🎯 APRÈS LE DÉPLOIEMENT
+
+Tu auras une URL comme :
+https://calendrier-avant-qcm.netlify.app
+
+Partage cette URL avec tes participants ! 🎄
+
+═══════════════════════════════════════════════════════════════
