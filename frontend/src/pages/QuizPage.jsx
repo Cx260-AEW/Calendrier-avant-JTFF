@@ -19,12 +19,12 @@ function QuizPage({ user, score, setScore }) {
     try {
       const response = await fetch(`${API_URL}/api/questions/today`);
       const data = await response.json();
-      
+
       if (data.available) {
         setQuestions(data.questions);
         setCurrentDay(data.currentDay);
         setIsOpen(data.isOpen);
-        
+
         // Grouper par jour
         const grouped = {};
         data.questions.forEach(q => {
@@ -48,7 +48,7 @@ function QuizPage({ user, score, setScore }) {
         body: JSON.stringify({ username: user.username })
       });
       const data = await response.json();
-      
+
       const answersMap = {};
       data.answers.forEach(a => {
         answersMap[a.questionId] = a.answer;
@@ -78,9 +78,9 @@ function QuizPage({ user, score, setScore }) {
           answer: selectedAnswers[questionId]
         })
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         setUserAnswers({ ...userAnswers, [questionId]: selectedAnswers[questionId] });
         setScore(data.score);
@@ -158,47 +158,76 @@ function QuizPage({ user, score, setScore }) {
               const isCorrect = hasAnswered && userAnswer === question.correctAnswer;
 
               return (
-                <div 
-                  key={question.id} 
-                  style={{ 
-                    marginBottom: '32px', 
-                    padding: '24px', 
-                    background: '#f9fafb', 
+                <div
+                  key={question.id}
+                  style={{
+                    marginBottom: '32px',
+                    padding: '24px',
+                    background: '#f9fafb',
                     borderRadius: '12px',
-                    border: hasAnswered ? (isCorrect ? '2px solid #10b981' : '2px solid #ef4444') : 'none'
+                    border: hasAnswered
+                      ? isCorrect
+                        ? '2px solid #10b981'
+                        : '2px solid #ef4444'
+                      : 'none',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                    <span style={{ 
-                      fontSize: '18px', 
-                      fontWeight: '600',
-                      color: 'white',
-                      background: hasAnswered ? (isCorrect ? '#10b981' : '#ef4444') : '#667eea',
-                      width: '32px',
-                      height: '32px',
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0
-                    }}>
+                    <span
+                      style={{
+                        fontSize: '18px',
+                        fontWeight: '600',
+                        color: 'white',
+                        background: hasAnswered
+                          ? isCorrect
+                            ? '#10b981'
+                            : '#ef4444'
+                          : '#667eea',
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                      }}
+                    >
                       {hasAnswered ? (isCorrect ? '✓' : '✗') : question.id}
                     </span>
+
                     <div style={{ flex: 1 }}>
-                      <h4 style={{ fontSize: '18px', marginBottom: '16px', lineHeight: '1.6' }}>
+                      <h3
+                        style={{
+                          marginBottom: '8px',
+                          fontSize: '20px',
+                          fontWeight: '700',
+                          color: '#374151',
+                        }}
+                      >
+                        Thème : {question.group}
+                      </h3>
+
+                      {/* Intitulé de la question */}
+                      <h4
+                        style={{
+                          fontSize: '18px',
+                          marginBottom: '16px',
+                          lineHeight: '1.6',
+                        }}
+                      >
                         {question.question}
                       </h4>
 
                       {question.image && (
-                        <img 
-                          src={`${API_URL}${question.image}`}
+                        <img
+                          src={`http://localhost:3000/api/images/Q${question.id}.png`}
                           alt="Question illustration"
-                          style={{ 
-                            width: '100%', 
-                            maxWidth: '600px', 
-                            borderRadius: '8px', 
+                          style={{
+                            width: '100%',
+                            maxWidth: '600px',
+                            borderRadius: '8px',
                             marginBottom: '16px',
-                            border: '2px solid #e5e7eb'
+                            border: '2px solid #e5e7eb',
                           }}
                         />
                       )}
@@ -207,7 +236,8 @@ function QuizPage({ user, score, setScore }) {
                         {question.options.map((option, optionIndex) => {
                           const isSelected = selectedAnswer === optionIndex;
                           const isUserAnswer = hasAnswered && userAnswer === optionIndex;
-                          const isCorrectOption = hasAnswered && optionIndex === question.correctAnswer;
+                          const isCorrectOption =
+                            hasAnswered && optionIndex === question.correctAnswer;
 
                           let className = 'question-option';
                           if (isSelected && !hasAnswered) className += ' selected';
@@ -218,17 +248,25 @@ function QuizPage({ user, score, setScore }) {
                             <div
                               key={optionIndex}
                               className={className}
-                              onClick={() => !hasAnswered && handleAnswerSelect(question.id, optionIndex)}
-                              style={{ 
+                              onClick={() =>
+                                !hasAnswered &&
+                                handleAnswerSelect(question.id, optionIndex)
+                              }
+                              style={{
                                 cursor: hasAnswered ? 'default' : 'pointer',
-                                opacity: hasAnswered && !isCorrectOption && !isUserAnswer ? 0.5 : 1
+                                opacity:
+                                  hasAnswered && !isCorrectOption && !isUserAnswer
+                                    ? 0.5
+                                    : 1,
                               }}
                             >
                               <span style={{ fontWeight: '600', marginRight: '8px' }}>
                                 {String.fromCharCode(65 + optionIndex)}.
                               </span>
                               {option}
-                              {isCorrectOption && <span style={{ marginLeft: '8px' }}>✓</span>}
+                              {isCorrectOption && (
+                                <span style={{ marginLeft: '8px' }}>✓</span>
+                              )}
                             </div>
                           );
                         })}
@@ -246,23 +284,40 @@ function QuizPage({ user, score, setScore }) {
                       )}
 
                       {hasAnswered && (
-                        <div style={{ 
-                          marginTop: '16px', 
-                          padding: '12px', 
-                          background: isCorrect ? '#d1fae5' : '#fee2e2', 
-                          borderRadius: '8px',
-                          color: isCorrect ? '#065f46' : '#991b1b',
-                          fontWeight: '600'
-                        }}>
-                          {isCorrect ? '✅ Bonne réponse ! +1 point' : '❌ Mauvaise réponse'}
-                        </div>
+                        <>
+                          <div
+                            style={{
+                              marginTop: '16px',
+                              padding: '12px',
+                              background: isCorrect ? '#d1fae5' : '#fee2e2',
+                              borderRadius: '8px',
+                              color: isCorrect ? '#065f46' : '#991b1b',
+                              fontWeight: '600',
+                            }}
+                          >
+                            {isCorrect
+                              ? '✅ Bonne réponse ! +1 point'
+                              : '❌ Mauvaise réponse'}
+                          </div>
+
+                          <h4
+                            style={{
+                              marginTop: '10px',
+                              backgroundColor: '#FFF9C4',
+                              borderRadius: '8px',
+                              padding: '10px',
+                            }}
+                          >
+                            {question.explanation}
+                          </h4>
+                        </>
                       )}
                     </div>
                   </div>
                 </div>
               );
             })}
-          </div>
+          </div >
         ))}
     </div>
   );

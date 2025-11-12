@@ -1,2 +1,6 @@
 // Configuration de l'API
-export const API_URL = import.meta.env.VITE_API_URL || 'https://calendrier-avant-jtff-production.up.railway.app';
+// TEST LOCAL
+//export const API_URL = "http://localhost:3000"
+
+//PUBLIC
+export const API_URL = 'https://calendrier-avant-jtff-production.up.railway.app';
