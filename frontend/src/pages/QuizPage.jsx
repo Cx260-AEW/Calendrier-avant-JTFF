@@ -220,7 +220,7 @@ function QuizPage({ user, score, setScore }) {
 
                       {question.image && (
                         <img
-                          src={`http://localhost:3000/api/images/Q${question.id}.png`}
+                          src={`${API_URL}/api/images/Q${question.id}.png`}
                           alt="Question illustration"
                           style={{
                             width: '100%',
