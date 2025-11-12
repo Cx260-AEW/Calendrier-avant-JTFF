@@ -6,11 +6,20 @@ const API_URL = import.meta.env.VITE_API_URL || 'https://calendrier-avant-jtff-p
 export default function AdminPage() {
   const [password, setPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // données existantes
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
   const [userDetails, setUserDetails] = useState(null);
+
+  // nouveau : settings & cron status
+  const [settings, setSettings] = useState(null);
+  const [cronStatus, setCronStatus] = useState(null);
+
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState('');
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -18,41 +27,102 @@ export default function AdminPage() {
     if (savedAuth) {
       setIsAuthenticated(true);
       setPassword(savedAuth);
-      fetchData(savedAuth);
+      fetchAll(savedAuth);
     }
   }, []);
 
+  // ---------- API helpers ----------
+  const fetchAll = async (pwd) => {
+    setLoading(true);
+    await Promise.all([
+      fetchData(pwd),
+      fetchSettings(pwd),
+      fetchCronStatus()
+    ]).catch(() => {});
+    setLoading(false);
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
+    setMessage('');
     try {
       const response = await fetch(`${API_URL}/api/admin/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password })
       });
-
       if (response.ok) {
         setIsAuthenticated(true);
         localStorage.setItem('adminAuth', password);
-        fetchData(password);
+        fetchAll(password);
       } else {
         setMessage('❌ Mot de passe incorrect');
       }
-    } catch (error) {
+    } catch {
       setMessage('❌ Erreur de connexion');
     }
   };
 
   const fetchData = async (pwd) => {
-    setLoading(true);
     try {
       const response = await fetch(`${API_URL}/api/admin/data?password=${pwd}`);
       const result = await response.json();
       setData(result);
-    } catch (error) {
+    } catch {
       setMessage('❌ Erreur lors du chargement des données');
     }
-    setLoading(false);
+  };
+
+  const fetchSettings = async (pwd = password) => {
+    try {
+      const r = await fetch(`${API_URL}/api/admin/settings?password=${pwd}`);
+      if (!r.ok) throw new Error();
+      const result = await r.json();
+      setSettings(result.settings);
+    } catch {
+      setMessage('❌ Erreur lors du chargement des paramètres');
+    }
+  };
+
+  const fetchCronStatus = async () => {
+    try {
+      const r = await fetch(`${API_URL}/api/admin/cron-status`);
+      if (!r.ok) throw new Error();
+      const result = await r.json();
+      setCronStatus(result);
+    } catch {
+      // silencieux
+    }
+  };
+
+  const saveSettings = async () => {
+    if (!settings) return;
+    setSaving(true);
+    setMessage('⏳ Sauvegarde des paramètres…');
+    try {
+      const r = await fetch(`${API_URL}/api/admin/settings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          password,
+          timezone: settings.timezone,
+          months: settings.months,
+          morningTime: settings.morningTime,
+          eveningTime: settings.eveningTime
+        })
+      });
+      const result = await r.json();
+      if (r.ok) {
+        setSettings(result.settings);
+        setMessage('✅ Paramètres sauvegardés et crons replanifiés');
+        fetchCronStatus();
+      } else {
+        setMessage('❌ ' + (result.error || 'Erreur lors de la sauvegarde'));
+      }
+    } catch {
+      setMessage('❌ Erreur réseau lors de la sauvegarde');
+    }
+    setSaving(false);
   };
 
   const fetchUserDetails = async (username) => {
@@ -62,7 +132,7 @@ export default function AdminPage() {
       const result = await response.json();
       setUserDetails(result);
       setSelectedUser(username);
-    } catch (error) {
+    } catch {
       setMessage('❌ Erreur lors du chargement des détails');
     }
     setLoading(false);
@@ -70,12 +140,10 @@ export default function AdminPage() {
 
   const handleDeleteUser = async (username) => {
     if (!confirm(`Supprimer ${username} et toutes ses réponses ?`)) return;
-
     try {
       const response = await fetch(`${API_URL}/api/admin/user/${username}?password=${password}`, {
         method: 'DELETE'
       });
-
       if (response.ok) {
         setMessage(`✅ ${username} supprimé`);
         fetchData(password);
@@ -86,22 +154,20 @@ export default function AdminPage() {
       } else {
         setMessage('❌ Erreur lors de la suppression');
       }
-    } catch (error) {
+    } catch {
       setMessage('❌ Erreur lors de la suppression');
     }
   };
 
   const handleResetAll = async () => {
-    if (!confirm('⚠️ ATTENTION : Supprimer TOUS les participants et leurs réponses ?\n\nCette action est irréversible !')) return;
-    if (!confirm('⚠️ DERNIÈRE CONFIRMATION : Êtes-vous ABSOLUMENT SÛR de vouloir tout supprimer ?')) return;
-
+    if (!confirm('⚠️ Supprimer TOUS les participants et leurs réponses ?')) return;
+    if (!confirm('⚠️ DERNIÈRE CONFIRMATION ?')) return;
     try {
       const response = await fetch(`${API_URL}/api/admin/reset-all`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password })
       });
-
       if (response.ok) {
         setMessage('✅ Tous les participants ont été supprimés');
         fetchData(password);
@@ -110,7 +176,7 @@ export default function AdminPage() {
       } else {
         setMessage('❌ Erreur lors de la réinitialisation');
       }
-    } catch (error) {
+    } catch {
       setMessage('❌ Erreur lors de la réinitialisation');
     }
   };
@@ -123,54 +189,42 @@ export default function AdminPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password })
       });
-
       const result = await response.json();
-      if (response.ok) {
-        setMessage('✅ ' + result.message);
-      } else {
-        setMessage('❌ ' + result.error);
-      }
-    } catch (error) {
+      if (response.ok) setMessage('✅ ' + result.message);
+      else setMessage('❌ ' + (result.error || 'Erreur'));
+    } catch {
       setMessage('❌ Erreur lors du test Discord');
     }
   };
 
   const handleTestMorning = async () => {
-    setMessage('⏳ Envoi du message du matin...');
+    setMessage('⏳ Envoi du message du matin…');
     try {
-      const response = await fetch(`${API_URL}/api/admin/test-morning`, {
+      const r = await fetch(`${API_URL}/api/admin/test-morning`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password })
       });
-
-      const result = await response.json();
-      if (response.ok) {
-        setMessage('✅ ' + result.message);
-      } else {
-        setMessage('❌ Erreur');
-      }
-    } catch (error) {
+      const result = await r.json();
+      if (r.ok) setMessage('✅ ' + result.message);
+      else setMessage('❌ Erreur');
+    } catch {
       setMessage('❌ Erreur lors du test');
     }
   };
 
   const handleTestEvening = async () => {
-    setMessage('⏳ Envoi du message du soir...');
+    setMessage('⏳ Envoi du message du soir…');
     try {
-      const response = await fetch(`${API_URL}/api/admin/test-evening`, {
+      const r = await fetch(`${API_URL}/api/admin/test-evening`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password })
       });
-
-      const result = await response.json();
-      if (response.ok) {
-        setMessage('✅ ' + result.message);
-      } else {
-        setMessage('❌ Erreur');
-      }
-    } catch (error) {
+      const result = await r.json();
+      if (r.ok) setMessage('✅ ' + result.message);
+      else setMessage('❌ Erreur');
+    } catch {
       setMessage('❌ Erreur lors du test');
     }
   };
@@ -182,8 +236,27 @@ export default function AdminPage() {
     setData(null);
     setSelectedUser(null);
     setUserDetails(null);
+    setSettings(null);
+    setCronStatus(null);
     navigate('/');
   };
+
+  // ---------- UI helpers ----------
+  const toggleMonth = (m) => {
+    if (!settings) return;
+    const has = settings.months.includes(m);
+    const months = has ? settings.months.filter(x => x !== m) : [...settings.months, m];
+    months.sort((a, b) => a - b);
+    setSettings({ ...settings, months });
+  };
+
+  const timezoneHints = [
+    'Europe/Paris',
+    'Pacific/Noumea',
+    'UTC',
+    'Europe/London',
+    'America/New_York'
+  ];
 
   if (!isAuthenticated) {
     return (
@@ -288,8 +361,138 @@ export default function AdminPage() {
           </div>
         )}
 
+        {/* PARAMÈTRES AUTOMATISATION */}
+        <div style={{
+          background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
+          padding: '30px',
+          borderRadius: '15px',
+          marginBottom: '30px',
+          color: 'white'
+        }}>
+          <h2 style={{ fontSize: '1.8rem', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span>⚙️</span> Paramètres d’automatisation (cron)
+          </h2>
+
+          {!settings ? (
+            <p>Chargement des paramètres…</p>
+          ) : (
+            <>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '15px' }}>
+                {/* Timezone */}
+                <div style={{ background: 'rgba(255,255,255,0.12)', padding: 16, borderRadius: 10 }}>
+                  <label style={{ display: 'block', marginBottom: 8, fontWeight: 'bold' }}>Fuseau horaire</label>
+                  <input
+                    list="tz-hints"
+                    value={settings.timezone}
+                    onChange={(e) => setSettings({ ...settings, timezone: e.target.value })}
+                    placeholder="Europe/Paris"
+                    style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #fff9' }}
+                  />
+                  <datalist id="tz-hints">
+                    {timezoneHints.map(tz => <option key={tz} value={tz} />)}
+                  </datalist>
+                </div>
+
+                {/* Morning time */}
+                <div style={{ background: 'rgba(255,255,255,0.12)', padding: 16, borderRadius: 10 }}>
+                  <label style={{ display: 'block', marginBottom: 8, fontWeight: 'bold' }}>Heure publication (matin)</label>
+                  <input
+                    type="time"
+                    value={settings.morningTime}
+                    onChange={(e) => setSettings({ ...settings, morningTime: e.target.value })}
+                    style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #fff9' }}
+                  />
+                </div>
+
+                {/* Evening time */}
+                <div style={{ background: 'rgba(255,255,255,0.12)', padding: 16, borderRadius: 10 }}>
+                  <label style={{ display: 'block', marginBottom: 8, fontWeight: 'bold' }}>Heure résultats (soir)</label>
+                  <input
+                    type="time"
+                    value={settings.eveningTime}
+                    onChange={(e) => setSettings({ ...settings, eveningTime: e.target.value })}
+                    style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #fff9' }}
+                  />
+                </div>
+
+                {/* Months */}
+                <div style={{ background: 'rgba(255,255,255,0.12)', padding: 16, borderRadius: 10 }}>
+                  <label style={{ display: 'block', marginBottom: 8, fontWeight: 'bold' }}>Mois actifs</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 6, color: 'white' }}>
+                    {[1,2,3,4,5,6,7,8,9,10,11,12].map(m => (
+                      <label key={m} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <input
+                          type="checkbox"
+                          checked={settings.months.includes(m)}
+                          onChange={() => toggleMonth(m)}
+                        />
+                        <span>{m.toString().padStart(2,'0')}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div style={{ display: 'flex', gap: 12, marginTop: 16, flexWrap: 'wrap' }}>
+                <button onClick={saveSettings} disabled={saving} style={{
+                  padding: '12px 18px',
+                  background: '#22c55e',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 10,
+                  fontWeight: 'bold',
+                  cursor: 'pointer'
+                }}>
+                  💾 Sauvegarder et replanifier
+                </button>
+                <button onClick={() => fetchSettings()} style={{
+                  padding: '12px 18px',
+                  background: 'rgba(255,255,255,0.2)',
+                  color: 'white',
+                  border: '2px solid rgba(255,255,255,0.4)',
+                  borderRadius: 10,
+                  fontWeight: 'bold',
+                  cursor: 'pointer'
+                }}>
+                  🔄 Recharger
+                </button>
+                <button onClick={fetchCronStatus} style={{
+                  padding: '12px 18px',
+                  background: 'rgba(255,255,255,0.2)',
+                  color: 'white',
+                  border: '2px solid rgba(255,255,255,0.4)',
+                  borderRadius: 10,
+                  fontWeight: 'bold',
+                  cursor: 'pointer'
+                }}>
+                  ⏱️ Statut Cron
+                </button>
+              </div>
+
+              {/* Cron status */}
+              {cronStatus && (
+                <div style={{
+                  marginTop: 16,
+                  background: 'rgba(255,255,255,0.12)',
+                  padding: 16,
+                  borderRadius: 10
+                }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: 6 }}>Statut actuel</div>
+                  <div>Now: {new Date(cronStatus.now).toLocaleString('fr-FR')}</div>
+                  <div>TZ: {cronStatus.timezone}</div>
+                  <div>Mois: {Array.isArray(cronStatus.months) ? cronStatus.months.join(', ') : '—'}</div>
+                  <div>Matin: {cronStatus.morningTime} | Soir: {cronStatus.eveningTime}</div>
+                  <div>Flags (aujourd’hui): matin = {String(cronStatus.sentMorning)} / soir = {String(cronStatus.sentEvening)}</div>
+                  {cronStatus.testMode && <div style={{ marginTop: 6 }}>🧪 TEST_MODE actif</div>}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
         {loading ? (
-          <p style={{ textAlign: 'center', fontSize: '1.5rem' }}>⏳ Chargement...</p>
+          <p style={{ textAlign: 'center', fontSize: '1.5rem' }}>⏳ Chargement…</p>
         ) : data ? (
           <>
             {/* STATISTIQUES GÉNÉRALES */}
@@ -349,368 +552,317 @@ export default function AdminPage() {
               <h2 style={{ fontSize: '1.8rem', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <span>🔔</span> Tests Discord
               </h2>
-              
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
                 gap: '15px'
               }}>
-                <button onClick={handleTestDiscord} style={{
-                  padding: '20px',
-                  background: 'rgba(255,255,255,0.2)',
-                  color: 'white',
-                  border: '2px solid rgba(255,255,255,0.5)',
-                  borderRadius: '10px',
-                  cursor: 'pointer',
-                  fontSize: '1.1rem',
-                  fontWeight: 'bold',
-                  transition: 'all 0.3s',
-                  backdropFilter: 'blur(10px)'
-                }}>
-                  🧪 Test Simple
-                </button>
-
-                <button onClick={handleTestMorning} style={{
-                  padding: '20px',
-                  background: 'rgba(255,255,255,0.2)',
-                  color: 'white',
-                  border: '2px solid rgba(255,255,255,0.5)',
-                  borderRadius: '10px',
-                  cursor: 'pointer',
-                  fontSize: '1.1rem',
-                  fontWeight: 'bold',
-                  transition: 'all 0.3s',
-                  backdropFilter: 'blur(10px)'
-                }}>
-                  🌅 Message Matin (8h)
-                </button>
-
-                <button onClick={handleTestEvening} style={{
-                  padding: '20px',
-                  background: 'rgba(255,255,255,0.2)',
-                  color: 'white',
-                  border: '2px solid rgba(255,255,255,0.5)',
-                  borderRadius: '10px',
-                  cursor: 'pointer',
-                  fontSize: '1.1rem',
-                  fontWeight: 'bold',
-                  transition: 'all 0.3s',
-                  backdropFilter: 'blur(10px)'
-                }}>
-                  🌙 Message Soir (23h30)
-                </button>
+                <button onClick={handleTestDiscord} style={btnGhost}>🧪 Test Simple</button>
+                <button onClick={handleTestMorning} style={btnGhost}>🌅 Message Matin</button>
+                <button onClick={handleTestEvening} style={btnGhost}>🌙 Message Soir</button>
               </div>
             </div>
 
             {/* VUE DÉTAILLÉE D'UN JOUEUR */}
             {selectedUser && userDetails && (
-              <div style={{
-                background: '#f8f9fa',
-                padding: '30px',
-                borderRadius: '15px',
-                marginBottom: '40px',
-                border: '2px solid #667eea'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                  <h2 style={{ fontSize: '1.8rem', margin: 0 }}>
-                    👤 Détails de {selectedUser}
-                  </h2>
-                  <button onClick={() => { setSelectedUser(null); setUserDetails(null); }} style={{
-                    padding: '10px 20px',
-                    background: '#6c757d',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    cursor: 'pointer'
-                  }}>
-                    Fermer
-                  </button>
-                </div>
-
-                {/* Stats globales du joueur */}
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                  gap: '15px',
-                  marginBottom: '30px'
-                }}>
-                  <div style={{
-                    background: 'white',
-                    padding: '20px',
-                    borderRadius: '10px',
-                    textAlign: 'center',
-                    boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-                  }}>
-                    <div style={{ fontSize: '2rem', color: '#667eea', fontWeight: 'bold' }}>
-                      {userDetails.totalScore}
-                    </div>
-                    <div style={{ color: '#666', fontSize: '0.9rem' }}>Points totaux</div>
-                  </div>
-                  <div style={{
-                    background: 'white',
-                    padding: '20px',
-                    borderRadius: '10px',
-                    textAlign: 'center',
-                    boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-                  }}>
-                    <div style={{ fontSize: '2rem', color: '#667eea', fontWeight: 'bold' }}>
-                      {userDetails.totalAnswers}
-                    </div>
-                    <div style={{ color: '#666', fontSize: '0.9rem' }}>Réponses</div>
-                  </div>
-                  <div style={{
-                    background: 'white',
-                    padding: '20px',
-                    borderRadius: '10px',
-                    textAlign: 'center',
-                    boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-                  }}>
-                    <div style={{ fontSize: '2rem', color: '#667eea', fontWeight: 'bold' }}>
-                      {userDetails.totalAnswers > 0 ? Math.round((userDetails.totalScore / userDetails.totalAnswers) * 100) : 0}%
-                    </div>
-                    <div style={{ color: '#666', fontSize: '0.9rem' }}>Taux de réussite</div>
-                  </div>
-                </div>
-
-                {/* Stats par catégorie */}
-                <h3 style={{ fontSize: '1.4rem', marginBottom: '15px' }}>📊 Statistiques par Catégorie</h3>
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-                  gap: '15px',
-                  marginBottom: '30px'
-                }}>
-                  {Object.entries(userDetails.statsByCategory).map(([category, stats]) => (
-                    <div key={category} style={{
-                      background: 'white',
-                      padding: '20px',
-                      borderRadius: '10px',
-                      boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-                    }}>
-                      <div style={{ fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '10px' }}>
-                        {category === 'Navigation aérienne' && '🧭'} 
-                        {category === 'Contrôle aérien' && '🎧'}
-                        {category === 'Réglementation' && '📜'}
-                        {category === 'Cartes aéronautiques' && '🗺️'}
-                        {' '}{category}
-                      </div>
-                      <div style={{ fontSize: '2rem', fontWeight: 'bold', color: stats.percentage >= 70 ? '#27ae60' : stats.percentage >= 50 ? '#f39c12' : '#e74c3c' }}>
-                        {stats.percentage}%
-                      </div>
-                      <div style={{ color: '#666', fontSize: '0.9rem' }}>
-                        {stats.correct} / {stats.total} correctes
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Stats par jour */}
-                <h3 style={{ fontSize: '1.4rem', marginBottom: '15px' }}>📅 Statistiques par Jour</h3>
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
-                  gap: '10px',
-                  marginBottom: '30px'
-                }}>
-                  {Object.entries(userDetails.statsByDay).map(([day, stats]) => (
-                    <div key={day} style={{
-                      background: 'white',
-                      padding: '15px',
-                      borderRadius: '8px',
-                      textAlign: 'center',
-                      boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-                    }}>
-                      <div style={{ fontSize: '0.8rem', color: '#666', marginBottom: '5px' }}>Jour {day}</div>
-                      <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: stats.percentage >= 75 ? '#27ae60' : stats.percentage >= 50 ? '#f39c12' : '#e74c3c' }}>
-                        {stats.percentage}%
-                      </div>
-                      <div style={{ fontSize: '0.75rem', color: '#999' }}>{stats.correct}/{stats.total}</div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Historique des réponses */}
-                <h3 style={{ fontSize: '1.4rem', marginBottom: '15px' }}>📝 Historique Complet des Réponses</h3>
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', background: 'white', fontSize: '0.9rem' }}>
-                    <thead>
-                      <tr style={{ background: '#667eea', color: 'white' }}>
-                        <th style={{ padding: '12px', textAlign: 'left' }}>Jour</th>
-                        <th style={{ padding: '12px', textAlign: 'left' }}>Catégorie</th>
-                        <th style={{ padding: '12px', textAlign: 'left' }}>Question</th>
-                        <th style={{ padding: '12px', textAlign: 'left' }}>Réponse</th>
-                        <th style={{ padding: '12px', textAlign: 'center' }}>Résultat</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {userDetails.answersDetails
-                        .sort((a, b) => a.day - b.day || a.questionId - b.questionId)
-                        .map((answer, index) => (
-                        <tr key={index} style={{ 
-                          borderBottom: '1px solid #ddd',
-                          background: answer.isCorrect ? '#d4edda' : '#f8d7da'
-                        }}>
-                          <td style={{ padding: '12px', fontWeight: 'bold' }}>Jour {answer.day}</td>
-                          <td style={{ padding: '12px' }}>
-                            {answer.group === 'Navigation aérienne' && '🧭'} 
-                            {answer.group === 'Contrôle aérien' && '🎧'}
-                            {answer.group === 'Réglementation' && '📜'}
-                            {answer.group === 'Cartes aéronautiques' && '🗺️'}
-                            {' '}{answer.group}
-                          </td>
-                          <td style={{ padding: '12px' }}>{answer.question.substring(0, 60)}...</td>
-                          <td style={{ padding: '12px' }}>
-                            <div style={{ marginBottom: '5px' }}>
-                              <strong>Répondu:</strong> {answer.userAnswerText}
-                            </div>
-                            {!answer.isCorrect && (
-                              <div style={{ color: '#27ae60' }}>
-                                <strong>Correcte:</strong> {answer.correctAnswerText}
-                              </div>
-                            )}
-                          </td>
-                          <td style={{ padding: '12px', textAlign: 'center' }}>
-                            <span style={{
-                              padding: '5px 15px',
-                              borderRadius: '20px',
-                              fontWeight: 'bold',
-                              background: answer.isCorrect ? '#27ae60' : '#e74c3c',
-                              color: 'white'
-                            }}>
-                              {answer.isCorrect ? '✓ Correct' : '✗ Incorrect'}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+              <UserDetailCard
+                selectedUser={selectedUser}
+                userDetails={userDetails}
+                onClose={() => { setSelectedUser(null); setUserDetails(null); }}
+              />
             )}
 
             {/* LISTE DES PARTICIPANTS */}
-            <div style={{ marginBottom: '40px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h2 style={{ fontSize: '1.8rem' }}>👥 Liste des Participants</h2>
-                <button onClick={handleResetAll} style={{
-                  padding: '12px 24px',
-                  background: '#e74c3c',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '10px',
-                  cursor: 'pointer',
-                  fontSize: '1rem',
-                  fontWeight: 'bold'
-                }}>
-                  🗑️ Reset Complet
-                </button>
-              </div>
+            <ParticipantsTable
+              data={data}
+              onShowUser={fetchUserDetails}
+              onDeleteUser={handleDeleteUser}
+              onResetAll={handleResetAll}
+              selectedUser={selectedUser}
+            />
 
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr style={{ background: '#f8f9fa', borderBottom: '2px solid #dee2e6' }}>
-                      <th style={{ padding: '15px', textAlign: 'left' }}>Pseudo</th>
-                      <th style={{ padding: '15px', textAlign: 'center' }}>Score</th>
-                      <th style={{ padding: '15px', textAlign: 'center' }}>Date d'inscription</th>
-                      <th style={{ padding: '15px', textAlign: 'center' }}>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.allUsers
-                      .sort((a, b) => b.score - a.score)
-                      .map((user, index) => (
-                        <tr key={index} style={{ 
-                          borderBottom: '1px solid #dee2e6',
-                          background: selectedUser === user.username ? '#e3f2fd' : 'white'
-                        }}>
-                          <td style={{ padding: '15px', fontWeight: 'bold' }}>{user.username}</td>
-                          <td style={{ padding: '15px', textAlign: 'center', fontSize: '1.2rem', color: '#667eea' }}>
-                            {user.score} pts
-                          </td>
-                          <td style={{ padding: '15px', textAlign: 'center', color: '#666' }}>
-                            {new Date(user.createdAt).toLocaleDateString('fr-FR')}
-                          </td>
-                          <td style={{ padding: '15px', textAlign: 'center' }}>
-                            <button
-                              onClick={() => fetchUserDetails(user.username)}
-                              style={{
-                                padding: '8px 16px',
-                                background: '#667eea',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '8px',
-                                cursor: 'pointer',
-                                fontSize: '0.9rem',
-                                marginRight: '10px'
-                              }}
-                            >
-                              📊 Détails
-                            </button>
-                            <button
-                              onClick={() => handleDeleteUser(user.username)}
-                              style={{
-                                padding: '8px 16px',
-                                background: '#e74c3c',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '8px',
-                                cursor: 'pointer',
-                                fontSize: '0.9rem'
-                              }}
-                            >
-                              Supprimer
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* STATISTIQUES PAR QUESTION */}
-            <div>
-              <h2 style={{ fontSize: '1.8rem', marginBottom: '20px' }}>📈 Statistiques par Question</h2>
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.95rem' }}>
-                  <thead>
-                    <tr style={{ background: '#f8f9fa', borderBottom: '2px solid #dee2e6' }}>
-                      <th style={{ padding: '12px', textAlign: 'left' }}>Jour</th>
-                      <th style={{ padding: '12px', textAlign: 'left' }}>Question</th>
-                      <th style={{ padding: '12px', textAlign: 'center' }}>Réponses</th>
-                      <th style={{ padding: '12px', textAlign: 'center' }}>Correctes</th>
-                      <th style={{ padding: '12px', textAlign: 'center' }}>Taux</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.questionStats.map((stat, index) => (
-                      <tr key={index} style={{ borderBottom: '1px solid #dee2e6' }}>
-                        <td style={{ padding: '12px', fontWeight: 'bold' }}>Jour {stat.day}</td>
-                        <td style={{ padding: '12px' }}>{stat.question.substring(0, 60)}...</td>
-                        <td style={{ padding: '12px', textAlign: 'center' }}>{stat.totalAnswers}</td>
-                        <td style={{ padding: '12px', textAlign: 'center', color: '#27ae60' }}>
-                          {stat.correctAnswers}
-                        </td>
-                        <td style={{ padding: '12px', textAlign: 'center' }}>
-                          <span style={{
-                            padding: '4px 12px',
-                            borderRadius: '20px',
-                            background: stat.successRate >= 70 ? '#d4edda' : stat.successRate >= 50 ? '#fff3cd' : '#f8d7da',
-                            color: stat.successRate >= 70 ? '#155724' : stat.successRate >= 50 ? '#856404' : '#721c24',
-                            fontWeight: 'bold'
-                          }}>
-                            {stat.successRate}%
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            {/* STAT PAR QUESTION */}
+            <QuestionStatsTable data={data} />
           </>
         ) : null}
+      </div>
+    </div>
+  );
+}
+
+/* ------- Sous-composants UI ------- */
+
+const btnGhost = {
+  padding: '20px',
+  background: 'rgba(255,255,255,0.2)',
+  color: 'white',
+  border: '2px solid rgba(255,255,255,0.5)',
+  borderRadius: '10px',
+  cursor: 'pointer',
+  fontSize: '1.1rem',
+  fontWeight: 'bold',
+  transition: 'all 0.3s',
+  backdropFilter: 'blur(10px)'
+};
+
+function ParticipantsTable({ data, onShowUser, onDeleteUser, onResetAll, selectedUser }) {
+  return (
+    <div style={{ marginBottom: '40px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h2 style={{ fontSize: '1.8rem' }}>👥 Liste des Participants</h2>
+        <button onClick={onResetAll} style={{
+          padding: '12px 24px', background: '#e74c3c', color: 'white',
+          border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '1rem', fontWeight: 'bold'
+        }}>
+          🗑️ Reset Complet
+        </button>
+      </div>
+      <div style={{ overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ background: '#f8f9fa', borderBottom: '2px solid #dee2e6' }}>
+              <th style={{ padding: '15px', textAlign: 'left' }}>Pseudo</th>
+              <th style={{ padding: '15px', textAlign: 'center' }}>Score</th>
+              <th style={{ padding: '15px', textAlign: 'center' }}>Date d'inscription</th>
+              <th style={{ padding: '15px', textAlign: 'center' }}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.allUsers
+              .sort((a, b) => b.score - a.score)
+              .map((user, index) => (
+                <tr key={index} style={{
+                  borderBottom: '1px solid #dee2e6',
+                  background: selectedUser === user.username ? '#e3f2fd' : 'white'
+                }}>
+                  <td style={{ padding: '15px', fontWeight: 'bold' }}>{user.username}</td>
+                  <td style={{ padding: '15px', textAlign: 'center', fontSize: '1.2rem', color: '#667eea' }}>
+                    {user.score} pts
+                  </td>
+                  <td style={{ padding: '15px', textAlign: 'center', color: '#666' }}>
+                    {new Date(user.createdAt).toLocaleDateString('fr-FR')}
+                  </td>
+                  <td style={{ padding: '15px', textAlign: 'center' }}>
+                    <button
+                      onClick={() => onShowUser(user.username)}
+                      style={{ padding: '8px 16px', background: '#667eea', color: 'white',
+                               border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem',
+                               marginRight: '10px' }}
+                    >
+                      📊 Détails
+                    </button>
+                    <button
+                      onClick={() => onDeleteUser(user.username)}
+                      style={{ padding: '8px 16px', background: '#e74c3c', color: 'white',
+                               border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem' }}
+                    >
+                      Supprimer
+                    </button>
+                  </td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function UserDetailCard({ selectedUser, userDetails, onClose }) {
+  return (
+    <div style={{
+      background: '#f8f9fa',
+      padding: '30px',
+      borderRadius: '15px',
+      marginBottom: '40px',
+      border: '2px solid #667eea'
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h2 style={{ fontSize: '1.8rem', margin: 0 }}>👤 Détails de {selectedUser}</h2>
+        <button onClick={onClose} style={{
+          padding: '10px 20px', background: '#6c757d', color: 'white',
+          border: 'none', borderRadius: '8px', cursor: 'pointer'
+        }}>
+          Fermer
+        </button>
+      </div>
+
+      {/* Stats globales du joueur */}
+      <div style={{
+        display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gap: '15px', marginBottom: '30px'
+      }}>
+        <StatCard title="Points totaux" value={userDetails.totalScore} />
+        <StatCard title="Réponses" value={userDetails.totalAnswers} />
+        <StatCard title="Taux de réussite"
+          value={userDetails.totalAnswers > 0 ? Math.round((userDetails.totalScore / userDetails.totalAnswers) * 100) + '%' : '0%'} />
+      </div>
+
+      {/* Stats par catégorie */}
+      <h3 style={{ fontSize: '1.4rem', marginBottom: '15px' }}>📊 Statistiques par Catégorie</h3>
+      <div style={{
+        display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+        gap: '15px', marginBottom: '30px'
+      }}>
+        {Object.entries(userDetails.statsByCategory).map(([category, stats]) => (
+          <div key={category} style={{
+            background: 'white', padding: '20px', borderRadius: '10px',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+          }}>
+            <div style={{ fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '10px' }}>
+              {category === 'Navigation aérienne' && '🧭'}
+              {category === 'Contrôle aérien' && '🎧'}
+              {category === 'Réglementation' && '📜'}
+              {category === 'Cartes aéronautiques' && '🗺️'} {' '}
+              {category}
+            </div>
+            <div style={{
+              fontSize: '2rem', fontWeight: 'bold',
+              color: stats.percentage >= 70 ? '#27ae60' : stats.percentage >= 50 ? '#f39c12' : '#e74c3c'
+            }}>
+              {stats.percentage}%
+            </div>
+            <div style={{ color: '#666', fontSize: '0.9rem' }}>
+              {stats.correct} / {stats.total} correctes
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Stats par jour */}
+      <h3 style={{ fontSize: '1.4rem', marginBottom: '15px' }}>📅 Statistiques par Jour</h3>
+      <div style={{
+        display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+        gap: '10px', marginBottom: '30px'
+      }}>
+        {Object.entries(userDetails.statsByDay).map(([day, stats]) => (
+          <div key={day} style={{
+            background: 'white', padding: '15px', borderRadius: '8px',
+            textAlign: 'center', boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+          }}>
+            <div style={{ fontSize: '0.8rem', color: '#666', marginBottom: '5px' }}>Jour {day}</div>
+            <div style={{
+              fontSize: '1.5rem', fontWeight: 'bold',
+              color: stats.percentage >= 75 ? '#27ae60' : stats.percentage >= 50 ? '#f39c12' : '#e74c3c'
+            }}>
+              {stats.percentage}%
+            </div>
+            <div style={{ fontSize: '0.75rem', color: '#999' }}>{stats.correct}/{stats.total}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Historique */}
+      <h3 style={{ fontSize: '1.4rem', marginBottom: '15px' }}>📝 Historique Complet des Réponses</h3>
+      <div style={{ overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', background: 'white', fontSize: '0.9rem' }}>
+          <thead>
+            <tr style={{ background: '#667eea', color: 'white' }}>
+              <th style={{ padding: '12px', textAlign: 'left' }}>Jour</th>
+              <th style={{ padding: '12px', textAlign: 'left' }}>Catégorie</th>
+              <th style={{ padding: '12px', textAlign: 'left' }}>Question</th>
+              <th style={{ padding: '12px', textAlign: 'left' }}>Réponse</th>
+              <th style={{ padding: '12px', textAlign: 'center' }}>Résultat</th>
+            </tr>
+          </thead>
+          <tbody>
+            {userDetails.answersDetails
+              .sort((a, b) => a.day - b.day || a.questionId - b.questionId)
+              .map((answer, index) => (
+              <tr key={index} style={{
+                borderBottom: '1px solid #ddd',
+                background: answer.isCorrect ? '#d4edda' : '#f8d7da'
+              }}>
+                <td style={{ padding: '12px', fontWeight: 'bold' }}>Jour {answer.day}</td>
+                <td style={{ padding: '12px' }}>
+                  {answer.group === 'Navigation aérienne' && '🧭'}
+                  {answer.group === 'Contrôle aérien' && '🎧'}
+                  {answer.group === 'Réglementation' && '📜'}
+                  {answer.group === 'Cartes aéronautiques' && '🗺️'} {' '}
+                  {answer.group}
+                </td>
+                <td style={{ padding: '12px' }}>{answer.question.substring(0, 60)}...</td>
+                <td style={{ padding: '12px' }}>
+                  <div style={{ marginBottom: '5px' }}>
+                    <strong>Répondu:</strong> {answer.userAnswerText}
+                  </div>
+                  {!answer.isCorrect && (
+                    <div style={{ color: '#27ae60' }}>
+                      <strong>Correcte:</strong> {answer.correctAnswerText}
+                    </div>
+                  )}
+                </td>
+                <td style={{ padding: '12px', textAlign: 'center' }}>
+                  <span style={{
+                    padding: '5px 15px',
+                    borderRadius: '20px',
+                    fontWeight: 'bold',
+                    background: answer.isCorrect ? '#27ae60' : '#e74c3c',
+                    color: 'white'
+                  }}>
+                    {answer.isCorrect ? '✓ Correct' : '✗ Incorrect'}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function StatCard({ title, value }) {
+  return (
+    <div style={{
+      background: 'white', padding: '20px', borderRadius: '10px',
+      textAlign: 'center', boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+    }}>
+      <div style={{ fontSize: '2rem', color: '#667eea', fontWeight: 'bold' }}>{value}</div>
+      <div style={{ color: '#666', fontSize: '0.9rem' }}>{title}</div>
+    </div>
+  );
+}
+
+function QuestionStatsTable({ data }) {
+  return (
+    <div>
+      <h2 style={{ fontSize: '1.8rem', marginBottom: '20px' }}>📈 Statistiques par Question</h2>
+      <div style={{ overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.95rem' }}>
+          <thead>
+            <tr style={{ background: '#f8f9fa', borderBottom: '2px solid #dee2e6' }}>
+              <th style={{ padding: '12px', textAlign: 'left' }}>Jour</th>
+              <th style={{ padding: '12px', textAlign: 'left' }}>Question</th>
+              <th style={{ padding: '12px', textAlign: 'center' }}>Réponses</th>
+              <th style={{ padding: '12px', textAlign: 'center' }}>Correctes</th>
+              <th style={{ padding: '12px', textAlign: 'center' }}>Taux</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.questionStats.map((stat, index) => (
+              <tr key={index} style={{ borderBottom: '1px solid #dee2e6' }}>
+                <td style={{ padding: '12px', fontWeight: 'bold' }}>Jour {stat.day}</td>
+                <td style={{ padding: '12px' }}>{stat.question.substring(0, 60)}...</td>
+                <td style={{ padding: '12px', textAlign: 'center' }}>{stat.totalAnswers}</td>
+                <td style={{ padding: '12px', textAlign: 'center', color: '#27ae60' }}>
+                  {stat.correctAnswers}
+                </td>
+                <td style={{ padding: '12px', textAlign: 'center' }}>
+                  <span style={{
+                    padding: '4px 12px',
+                    borderRadius: '20px',
+                    background: stat.successRate >= 70 ? '#d4edda' : stat.successRate >= 50 ? '#fff3cd' : '#f8d7da',
+                    color: stat.successRate >= 70 ? '#155724' : stat.successRate >= 50 ? '#856404' : '#721c24',
+                    fontWeight: 'bold'
+                  }}>
+                    {stat.successRate}%
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
