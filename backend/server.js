@@ -1,7 +1,7 @@
 // ========================================
 // 🧪 MODE TEST - CONFIGURATION (facultatif)
 // ========================================
-const TEST_MODE = true;            // ← false en production
+const TEST_MODE = false;            // ← false en production
 const TEST_DAY = 25;               // ← Jour simulé (1-25)
 const TEST_ALWAYS_OPEN = true;     // ← Ignore la fenêtre horaire en test
 // ========================================
