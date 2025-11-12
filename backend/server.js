@@ -1,5 +1,5 @@
 // ========================================
-// 🧪 MODE TEST - CONFIGURATION
+// 🧪 MODE TEST - CONFIGURATION.
 // ========================================
 const TEST_MODE = true;           // ← Mettre à false pour la production
 const TEST_DAY = 5;               // ← Jour à simuler (1-25)
