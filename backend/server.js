@@ -2,7 +2,7 @@
 // 🧪 MODE TEST - CONFIGURATION.
 // ========================================
 const TEST_MODE = true;           // ← Mettre à false pour la production
-const TEST_DAY = 5;               // ← Jour à simuler (1-25)
+const TEST_DAY = 25;               // ← Jour à simuler (1-25)
 const TEST_ALWAYS_OPEN = true;    // ← Toujours ouvert (ignorer horaires)
 // ========================================
 // Les crons 8h et 23h30 fonctionnent TOUJOURS (même en mode test)
