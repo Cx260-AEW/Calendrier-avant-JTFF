@@ -12,10 +12,7 @@ import cron from 'node-cron';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import dotenv from 'dotenv';
-import { questions } from './questions.js';
-
-dotenv.config();
+import { questions } from './questions.js'; // garde ton fichier de questions
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,31 +20,30 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// 🛡️ Secrets / Config via ENV
+// 🛡️ Secrets / Config via ENV (pas de dotenv nécessaire sur Railway)
 const DISCORD_WEBHOOK = process.env.DISCORD_WEBHOOK;
 const ADMIN_PASSWORD  = process.env.ADMIN_PASSWORD;
 const TZ              = process.env.TZ || 'Europe/Paris';
 const DATA_FILE       = path.join(__dirname, 'data.json');
 
-// ✅ CORS FIX : autoriser le front Netlify
+// ✅ CORS : autorise ton front Netlify
 const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS ||
   'https://calendrier-de-l-avant-jtff.netlify.app'
 ).split(',').map(s => s.trim());
 
 const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin || ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
-    return callback(new Error('Origin not allowed by CORS'));
+  origin(origin, cb) {
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+    return cb(new Error('Origin not allowed by CORS'));
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization'],
   optionsSuccessStatus: 204,
 };
 
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // gérer les pré-requêtes OPTIONS
-
+app.options('*', cors(corsOptions));
 app.use(express.json());
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
@@ -57,7 +53,7 @@ function nowParis() {
   return new Date(s);
 }
 function todayKey() {
-  return nowParis().toISOString().slice(0, 10);
+  return nowParis().toISOString().slice(0,10);
 }
 
 // ---------- data.json helpers ----------
@@ -242,6 +238,79 @@ app.get('/api/admin/cron-status', async (_req, res) => {
     timezone: TZ,
     testMode: TEST_MODE
   });
+});
+
+// ====== API existantes ======
+app.get('/api/questions/today', async (req, res) => {
+  const currentDay = getCurrentDay();
+  if (currentDay === 0) {
+    return res.json({
+      available: false,
+      message: 'Le calendrier de l\'Avent n\'est pas encore commencé ou est terminé.'
+    });
+  }
+  const availableQuestions = questions.filter(q => q.day <= currentDay);
+  res.json({
+    available: true,
+    currentDay,
+    isOpen: isOpenHours(),
+    questions: availableQuestions
+  });
+});
+
+app.post('/api/user', async (req, res) => {
+  const { username } = req.body || {};
+  if (!username || username.trim().length === 0) {
+    return res.status(400).json({ error: 'Username requis' });
+  }
+  const data = await readData();
+  let user = data.users.find(u => u.username.toLowerCase() === username.toLowerCase());
+  if (!user) {
+    user = { username: username.trim(), createdAt: new Date().toISOString() };
+    data.users.push(user);
+    await writeDataSafe(data);
+  }
+  const userAnswers = data.answers.filter(a => a.username.toLowerCase() === username.toLowerCase());
+  const score = calculateUserScore(username, data);
+  res.json({ user, answers: userAnswers, score });
+});
+
+app.post('/api/answer', async (req, res) => {
+  const { username, questionId, answer } = req.body || {};
+  if (!username || questionId === undefined || answer === undefined) {
+    return res.status(400).json({ error: 'Données manquantes' });
+  }
+  const data = await readData();
+  const user = data.users.find(u => u.username.toLowerCase() === username.toLowerCase());
+  if (!user) return res.status(404).json({ error: 'Utilisateur non trouvé' });
+
+  const q = questions.find(q => q.id === questionId);
+  if (!q) return res.status(404).json({ error: 'Question non trouvée' });
+
+  const exists = data.answers.find(a => a.username.toLowerCase() === username.toLowerCase() && a.questionId === questionId);
+  if (exists) return res.status(400).json({ error: 'Vous avez déjà répondu à cette question' });
+
+  data.answers.push({
+    username: username.toLowerCase(),
+    questionId,
+    answer,
+    answeredAt: new Date().toISOString()
+  });
+  await writeDataSafe(data);
+
+  const isCorrect = answer === q.correctAnswer;
+  const score = calculateUserScore(username, data);
+  res.json({ success: true, isCorrect, score });
+});
+
+app.get('/api/leaderboard', async (_req, res) => {
+  const data = await readData();
+  const leaderboard = data.users.map(u => {
+    const score = calculateUserScore(u.username, data);
+    const answersCount = data.answers.filter(a => a.username.toLowerCase() === u.username.toLowerCase()).length;
+    return { username: u.username, score, answersCount };
+  }).sort((a,b) => (b.score - a.score) || (a.answersCount - b.answersCount));
+  res.json(leaderboard);
 });
 
 // ====== CRON JOBS (novembre) ======
