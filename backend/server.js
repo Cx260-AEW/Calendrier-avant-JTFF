@@ -25,7 +25,7 @@ const PORT = process.env.PORT || 3001;
 
 // Configuration
 const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1437838332930560112/3ys2Itxs5xq5eoLt1Rck8yXaONi7YFUoTRSpm5ARnQdmrRSY3m0l704Gci4w0AR2YRqO';
-const ADMIN_PASSWORD = 'ADMIN2025';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 const DATA_FILE = path.join(__dirname, 'data.json');
 
 // Middleware
