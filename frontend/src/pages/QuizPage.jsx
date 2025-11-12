@@ -189,19 +189,29 @@ function QuizPage({ user, score, setScore }) {
                         {question.question}
                       </h4>
 
-                      {question.image && (
-                        <img 
-                          src={`${API_URL}${question.image}`}
-                          alt="Question illustration"
-                          style={{ 
-                            width: '100%', 
-                            maxWidth: '600px', 
-                            borderRadius: '8px', 
-                            marginBottom: '16px',
-                            border: '2px solid #e5e7eb'
-                          }}
-                        />
-                      )}
+{question.image && (
+  <div style={{
+    margin: '12px 0 16px',
+    borderRadius: '10px',
+    overflow: 'hidden',
+    background: '#f7f7f7',
+    border: '1px solid #ddd'
+  }}>
+    <img
+      src={`${API_URL}${question.image}`}
+      alt={`Illustration pour la question ${question.id}`}
+      style={{
+        display: 'block',
+        width: '100%',
+        height: 'auto',
+        maxHeight: '420px',
+        objectFit: 'contain',
+        background: '#fff'
+      }}
+      loading="lazy"
+    />
+  </div>
+)}
 
                       <div style={{ marginTop: '16px' }}>
                         {question.options.map((option, optionIndex) => {
