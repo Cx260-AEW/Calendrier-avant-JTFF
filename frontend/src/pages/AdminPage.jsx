@@ -1,243 +1,206 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { API_URL } from '../config';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://calendrier-avant-jtff-production.up.railway.app';
-
-export default function AdminPage() {
-  const [password, setPassword] = useState('');
+function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [data, setData] = useState(null);
+  const [password, setPassword] = useState('');
+  const [config, setConfig] = useState(null);
+  const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [userDetails, setUserDetails] = useState(null);
-  const navigate = useNavigate();
+  
+  // Form states
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [morningHour, setMorningHour] = useState(8);
+  const [morningMinute, setMorningMinute] = useState(0);
+  const [eveningHour, setEveningHour] = useState(23);
+  const [eveningMinute, setEveningMinute] = useState(0);
+  const [discordWebhook, setDiscordWebhook] = useState('');
 
   useEffect(() => {
-    const savedAuth = localStorage.getItem('adminAuth');
-    if (savedAuth) {
-      setIsAuthenticated(true);
-      setPassword(savedAuth);
-      fetchData(savedAuth);
+    if (isAuthenticated) {
+      loadConfig();
+      loadStats();
     }
-  }, []);
+  }, [isAuthenticated]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    
     try {
       const response = await fetch(`${API_URL}/api/admin/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password })
       });
-
-      if (response.ok) {
+      
+      const data = await response.json();
+      
+      if (data.success) {
         setIsAuthenticated(true);
-        localStorage.setItem('adminAuth', password);
-        fetchData(password);
+        setMessage('✅ Connexion réussie');
       } else {
         setMessage('❌ Mot de passe incorrect');
       }
     } catch (error) {
       setMessage('❌ Erreur de connexion');
     }
-  };
-
-  const fetchData = async (pwd) => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${API_URL}/api/admin/data?password=${pwd}`);
-      const result = await response.json();
-      setData(result);
-    } catch (error) {
-      setMessage('❌ Erreur lors du chargement des données');
-    }
+    
     setLoading(false);
   };
 
-  const fetchUserDetails = async (username) => {
+  const loadConfig = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/admin/config`);
+      const data = await response.json();
+      
+      setConfig(data);
+      setStartDate(data.startDate);
+      setEndDate(data.endDate);
+      setMorningHour(data.morningHour);
+      setMorningMinute(data.morningMinute);
+      setEveningHour(data.eveningHour);
+      setEveningMinute(data.eveningMinute);
+      setDiscordWebhook(data.discordWebhook);
+    } catch (error) {
+      console.error('Erreur:', error);
+    }
+  };
+
+  const loadStats = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/admin/stats`);
+      const data = await response.json();
+      setStats(data);
+    } catch (error) {
+      console.error('Erreur:', error);
+    }
+  };
+
+  const handleSaveConfig = async (e) => {
+    e.preventDefault();
     setLoading(true);
+    
     try {
-      const response = await fetch(`${API_URL}/api/admin/user/${username}?password=${password}`);
-      const result = await response.json();
-      setUserDetails(result);
-      setSelectedUser(username);
+      const response = await fetch(`${API_URL}/api/admin/config`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          password,
+          startDate,
+          endDate,
+          morningHour: parseInt(morningHour),
+          morningMinute: parseInt(morningMinute),
+          eveningHour: parseInt(eveningHour),
+          eveningMinute: parseInt(eveningMinute),
+          discordWebhook
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setMessage('✅ Configuration enregistrée ! Les crons ont été reconfigurés.');
+        setConfig(data.config);
+      } else {
+        setMessage('❌ Erreur lors de la sauvegarde');
+      }
     } catch (error) {
-      setMessage('❌ Erreur lors du chargement des détails');
+      setMessage('❌ Erreur de connexion');
     }
+    
     setLoading(false);
-  };
-
-  const handleDeleteUser = async (username) => {
-    if (!confirm(`Supprimer ${username} et toutes ses réponses ?`)) return;
-
-    try {
-      const response = await fetch(`${API_URL}/api/admin/user/${username}?password=${password}`, {
-        method: 'DELETE'
-      });
-
-      if (response.ok) {
-        setMessage(`✅ ${username} supprimé`);
-        fetchData(password);
-        if (selectedUser === username) {
-          setSelectedUser(null);
-          setUserDetails(null);
-        }
-      } else {
-        setMessage('❌ Erreur lors de la suppression');
-      }
-    } catch (error) {
-      setMessage('❌ Erreur lors de la suppression');
-    }
-  };
-
-  const handleResetAll = async () => {
-    if (!confirm('⚠️ ATTENTION : Supprimer TOUS les participants et leurs réponses ?\n\nCette action est irréversible !')) return;
-    if (!confirm('⚠️ DERNIÈRE CONFIRMATION : Êtes-vous ABSOLUMENT SÛR de vouloir tout supprimer ?')) return;
-
-    try {
-      const response = await fetch(`${API_URL}/api/admin/reset-all`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password })
-      });
-
-      if (response.ok) {
-        setMessage('✅ Tous les participants ont été supprimés');
-        fetchData(password);
-        setSelectedUser(null);
-        setUserDetails(null);
-      } else {
-        setMessage('❌ Erreur lors de la réinitialisation');
-      }
-    } catch (error) {
-      setMessage('❌ Erreur lors de la réinitialisation');
-    }
-  };
-
-  const handleTestDiscord = async () => {
-    setMessage('⏳ Envoi du message de test...');
-    try {
-      const response = await fetch(`${API_URL}/api/admin/test-discord`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password })
-      });
-
-      const result = await response.json();
-      if (response.ok) {
-        setMessage('✅ ' + result.message);
-      } else {
-        setMessage('❌ ' + result.error);
-      }
-    } catch (error) {
-      setMessage('❌ Erreur lors du test Discord');
-    }
+    setTimeout(() => setMessage(''), 5000);
   };
 
   const handleTestMorning = async () => {
-    setMessage('⏳ Envoi du message du matin...');
+    setLoading(true);
+    
     try {
       const response = await fetch(`${API_URL}/api/admin/test-morning`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password })
       });
-
-      const result = await response.json();
-      if (response.ok) {
-        setMessage('✅ ' + result.message);
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setMessage('✅ Message du matin envoyé sur Discord !');
       } else {
-        setMessage('❌ Erreur');
+        setMessage('❌ Erreur lors de l\'envoi');
       }
     } catch (error) {
-      setMessage('❌ Erreur lors du test');
+      setMessage('❌ Erreur de connexion');
     }
+    
+    setLoading(false);
+    setTimeout(() => setMessage(''), 5000);
   };
 
   const handleTestEvening = async () => {
-    setMessage('⏳ Envoi du message du soir...');
+    setLoading(true);
+    
     try {
       const response = await fetch(`${API_URL}/api/admin/test-evening`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password })
       });
-
-      const result = await response.json();
-      if (response.ok) {
-        setMessage('✅ ' + result.message);
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setMessage('✅ Message du soir envoyé sur Discord !');
       } else {
-        setMessage('❌ Erreur');
+        setMessage('❌ Erreur lors de l\'envoi');
       }
     } catch (error) {
-      setMessage('❌ Erreur lors du test');
+      setMessage('❌ Erreur de connexion');
     }
+    
+    setLoading(false);
+    setTimeout(() => setMessage(''), 5000);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('adminAuth');
-    setIsAuthenticated(false);
-    setPassword('');
-    setData(null);
-    setSelectedUser(null);
-    setUserDetails(null);
-    navigate('/');
-  };
-
+  // Page de connexion
   if (!isAuthenticated) {
     return (
-      <div style={{
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '20px'
-      }}>
-        <div style={{
-          background: 'white',
-          padding: '40px',
-          borderRadius: '20px',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-          maxWidth: '400px',
-          width: '100%'
-        }}>
-          <h1 style={{ textAlign: 'center', marginBottom: '30px', fontSize: '2rem' }}>
-            🔐 Admin
-          </h1>
+      <div className="container">
+        <div className="card" style={{ maxWidth: '500px', margin: '0 auto', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '32px', marginBottom: '16px' }}>👨‍💼 Admin</h2>
+          <p style={{ color: '#6b7280', marginBottom: '32px' }}>
+            Connexion requise pour accéder au panneau d'administration
+          </p>
+
           <form onSubmit={handleLogin}>
             <input
               type="password"
+              className="input"
+              placeholder="Mot de passe admin"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Mot de passe admin"
-              style={{
-                width: '100%',
-                padding: '15px',
-                fontSize: '1rem',
-                border: '2px solid #ddd',
-                borderRadius: '10px',
-                marginBottom: '20px',
-                boxSizing: 'border-box'
-              }}
+              disabled={loading}
+              style={{ marginBottom: '20px' }}
             />
-            <button type="submit" style={{
-              width: '100%',
-              padding: '15px',
-              background: '#667eea',
-              color: 'white',
-              border: 'none',
-              borderRadius: '10px',
-              fontSize: '1.1rem',
-              fontWeight: 'bold',
-              cursor: 'pointer'
-            }}>
-              Se connecter
+            <button 
+              type="submit" 
+              className="btn btn-primary" 
+              disabled={loading || !password}
+              style={{ width: '100%' }}
+            >
+              {loading ? '⏳ Connexion...' : '🔓 Se connecter'}
             </button>
           </form>
+
           {message && (
-            <p style={{ marginTop: '20px', textAlign: 'center', color: message.includes('❌') ? '#e74c3c' : '#27ae60' }}>
+            <p style={{ 
+              marginTop: '20px', 
+              color: message.includes('✅') ? '#10b981' : '#ef4444',
+              fontWeight: '600'
+            }}>
               {message}
             </p>
           )}
@@ -246,472 +209,232 @@ export default function AdminPage() {
     );
   }
 
+  // Panneau admin
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      padding: '20px'
-    }}>
-      <div style={{
-        maxWidth: '1600px',
-        margin: '0 auto',
-        background: 'white',
-        borderRadius: '20px',
-        padding: '40px',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-          <h1 style={{ fontSize: '2.5rem', margin: 0 }}>📊 Dashboard Admin</h1>
-          <button onClick={handleLogout} style={{
-            padding: '10px 20px',
-            background: '#e74c3c',
-            color: 'white',
-            border: 'none',
-            borderRadius: '10px',
-            cursor: 'pointer',
-            fontSize: '1rem'
-          }}>
-            Déconnexion
-          </button>
+    <div className="container">
+      {/* Message de succès/erreur */}
+      {message && (
+        <div style={{
+          padding: '16px',
+          background: message.includes('✅') ? '#d1fae5' : '#fee2e2',
+          border: `2px solid ${message.includes('✅') ? '#10b981' : '#ef4444'}`,
+          borderRadius: '8px',
+          marginBottom: '24px',
+          fontWeight: '600',
+          color: message.includes('✅') ? '#065f46' : '#991b1b'
+        }}>
+          {message}
         </div>
+      )}
 
-        {message && (
-          <div style={{
-            padding: '15px',
-            background: message.includes('❌') ? '#fee' : '#efe',
-            border: `2px solid ${message.includes('❌') ? '#e74c3c' : '#27ae60'}`,
-            borderRadius: '10px',
-            marginBottom: '20px',
-            fontSize: '1.1rem'
-          }}>
-            {message}
+      {/* Statistiques */}
+      {stats && (
+        <div className="card" style={{ marginBottom: '24px' }}>
+          <h2 style={{ fontSize: '28px', marginBottom: '24px' }}>📊 Statistiques</h2>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+            <div style={{ padding: '20px', background: '#f3f4f6', borderRadius: '8px' }}>
+              <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '8px' }}>Jour actuel</p>
+              <p style={{ fontSize: '32px', fontWeight: '700', color: '#667eea' }}>
+                {stats.currentDay}/25
+              </p>
+            </div>
+            
+            <div style={{ padding: '20px', background: '#f3f4f6', borderRadius: '8px' }}>
+              <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '8px' }}>Utilisateurs</p>
+              <p style={{ fontSize: '32px', fontWeight: '700', color: '#10b981' }}>
+                {stats.totalUsers}
+              </p>
+            </div>
+            
+            <div style={{ padding: '20px', background: '#f3f4f6', borderRadius: '8px' }}>
+              <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '8px' }}>Réponses totales</p>
+              <p style={{ fontSize: '32px', fontWeight: '700', color: '#f59e0b' }}>
+                {stats.totalAnswers}
+              </p>
+            </div>
           </div>
-        )}
 
-        {loading ? (
-          <p style={{ textAlign: 'center', fontSize: '1.5rem' }}>⏳ Chargement...</p>
-        ) : data ? (
-          <>
-            {/* STATISTIQUES GÉNÉRALES */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-              gap: '20px',
-              marginBottom: '40px'
-            }}>
-              <div style={{
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                color: 'white',
-                padding: '30px',
-                borderRadius: '15px',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '3rem', marginBottom: '10px' }}>👥</div>
-                <div style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>{data.users}</div>
-                <div style={{ fontSize: '1.1rem', opacity: 0.9 }}>Participants</div>
-              </div>
-
-              <div style={{
-                background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                color: 'white',
-                padding: '30px',
-                borderRadius: '15px',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '3rem', marginBottom: '10px' }}>📝</div>
-                <div style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>{data.totalAnswers}</div>
-                <div style={{ fontSize: '1.1rem', opacity: 0.9 }}>Réponses totales</div>
-              </div>
-
-              <div style={{
-                background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-                color: 'white',
-                padding: '30px',
-                borderRadius: '15px',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '3rem', marginBottom: '10px' }}>📊</div>
-                <div style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>
-                  {data.totalAnswers > 0 ? Math.round((data.questionStats.reduce((sum, q) => sum + q.correctAnswers, 0) / data.totalAnswers) * 100) : 0}%
+          {/* Top 3 */}
+          {stats.leaderboard && stats.leaderboard.length > 0 && (
+            <div style={{ marginTop: '24px' }}>
+              <h3 style={{ fontSize: '20px', marginBottom: '16px' }}>🏆 Top 3</h3>
+              {stats.leaderboard.map((user, index) => (
+                <div key={index} style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '12px',
+                  background: '#f9fafb',
+                  borderRadius: '8px',
+                  marginBottom: '8px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span style={{ fontSize: '24px' }}>
+                      {['🥇', '🥈', '🥉'][index]}
+                    </span>
+                    <span style={{ fontWeight: '600' }}>{user.username}</span>
+                  </div>
+                  <span className="score-badge">{user.score} pts</span>
                 </div>
-                <div style={{ fontSize: '1.1rem', opacity: 0.9 }}>Taux de réussite</div>
-              </div>
+              ))}
             </div>
+          )}
+        </div>
+      )}
 
-            {/* SECTION TESTS DISCORD */}
-            <div style={{
-              background: 'linear-gradient(135deg, #5f72bd 0%, #9b23ea 100%)',
-              padding: '30px',
-              borderRadius: '15px',
-              marginBottom: '40px',
-              color: 'white'
-            }}>
-              <h2 style={{ fontSize: '1.8rem', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span>🔔</span> Tests Discord
-              </h2>
+      {/* Configuration */}
+      <div className="card">
+        <h2 style={{ fontSize: '28px', marginBottom: '24px' }}>⚙️ Configuration</h2>
+        
+        <form onSubmit={handleSaveConfig}>
+          {/* Dates */}
+          <div style={{ marginBottom: '24px' }}>
+            <h3 style={{ fontSize: '20px', marginBottom: '16px', color: '#667eea' }}>📅 Période du calendrier</h3>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+                  Date de début
+                </label>
+                <input
+                  type="date"
+                  className="input"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  required
+                />
+              </div>
               
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-                gap: '15px'
-              }}>
-                <button onClick={handleTestDiscord} style={{
-                  padding: '20px',
-                  background: 'rgba(255,255,255,0.2)',
-                  color: 'white',
-                  border: '2px solid rgba(255,255,255,0.5)',
-                  borderRadius: '10px',
-                  cursor: 'pointer',
-                  fontSize: '1.1rem',
-                  fontWeight: 'bold',
-                  transition: 'all 0.3s',
-                  backdropFilter: 'blur(10px)'
-                }}>
-                  🧪 Test Simple
-                </button>
-
-                <button onClick={handleTestMorning} style={{
-                  padding: '20px',
-                  background: 'rgba(255,255,255,0.2)',
-                  color: 'white',
-                  border: '2px solid rgba(255,255,255,0.5)',
-                  borderRadius: '10px',
-                  cursor: 'pointer',
-                  fontSize: '1.1rem',
-                  fontWeight: 'bold',
-                  transition: 'all 0.3s',
-                  backdropFilter: 'blur(10px)'
-                }}>
-                  🌅 Message Matin (8h)
-                </button>
-
-                <button onClick={handleTestEvening} style={{
-                  padding: '20px',
-                  background: 'rgba(255,255,255,0.2)',
-                  color: 'white',
-                  border: '2px solid rgba(255,255,255,0.5)',
-                  borderRadius: '10px',
-                  cursor: 'pointer',
-                  fontSize: '1.1rem',
-                  fontWeight: 'bold',
-                  transition: 'all 0.3s',
-                  backdropFilter: 'blur(10px)'
-                }}>
-                  🌙 Message Soir (23h30)
-                </button>
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+                  Date de fin
+                </label>
+                <input
+                  type="date"
+                  className="input"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  required
+                />
               </div>
             </div>
+          </div>
 
-            {/* VUE DÉTAILLÉE D'UN JOUEUR */}
-            {selectedUser && userDetails && (
-              <div style={{
-                background: '#f8f9fa',
-                padding: '30px',
-                borderRadius: '15px',
-                marginBottom: '40px',
-                border: '2px solid #667eea'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                  <h2 style={{ fontSize: '1.8rem', margin: 0 }}>
-                    👤 Détails de {selectedUser}
-                  </h2>
-                  <button onClick={() => { setSelectedUser(null); setUserDetails(null); }} style={{
-                    padding: '10px 20px',
-                    background: '#6c757d',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    cursor: 'pointer'
-                  }}>
-                    Fermer
-                  </button>
-                </div>
-
-                {/* Stats globales du joueur */}
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                  gap: '15px',
-                  marginBottom: '30px'
-                }}>
-                  <div style={{
-                    background: 'white',
-                    padding: '20px',
-                    borderRadius: '10px',
-                    textAlign: 'center',
-                    boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-                  }}>
-                    <div style={{ fontSize: '2rem', color: '#667eea', fontWeight: 'bold' }}>
-                      {userDetails.totalScore}
-                    </div>
-                    <div style={{ color: '#666', fontSize: '0.9rem' }}>Points totaux</div>
-                  </div>
-                  <div style={{
-                    background: 'white',
-                    padding: '20px',
-                    borderRadius: '10px',
-                    textAlign: 'center',
-                    boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-                  }}>
-                    <div style={{ fontSize: '2rem', color: '#667eea', fontWeight: 'bold' }}>
-                      {userDetails.totalAnswers}
-                    </div>
-                    <div style={{ color: '#666', fontSize: '0.9rem' }}>Réponses</div>
-                  </div>
-                  <div style={{
-                    background: 'white',
-                    padding: '20px',
-                    borderRadius: '10px',
-                    textAlign: 'center',
-                    boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-                  }}>
-                    <div style={{ fontSize: '2rem', color: '#667eea', fontWeight: 'bold' }}>
-                      {userDetails.totalAnswers > 0 ? Math.round((userDetails.totalScore / userDetails.totalAnswers) * 100) : 0}%
-                    </div>
-                    <div style={{ color: '#666', fontSize: '0.9rem' }}>Taux de réussite</div>
-                  </div>
-                </div>
-
-                {/* Stats par catégorie */}
-                <h3 style={{ fontSize: '1.4rem', marginBottom: '15px' }}>📊 Statistiques par Catégorie</h3>
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-                  gap: '15px',
-                  marginBottom: '30px'
-                }}>
-                  {Object.entries(userDetails.statsByCategory).map(([category, stats]) => (
-                    <div key={category} style={{
-                      background: 'white',
-                      padding: '20px',
-                      borderRadius: '10px',
-                      boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-                    }}>
-                      <div style={{ fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '10px' }}>
-                        {category === 'Navigation aérienne' && '🧭'} 
-                        {category === 'Contrôle aérien' && '🎧'}
-                        {category === 'Réglementation' && '📜'}
-                        {category === 'Cartes aéronautiques' && '🗺️'}
-                        {' '}{category}
-                      </div>
-                      <div style={{ fontSize: '2rem', fontWeight: 'bold', color: stats.percentage >= 70 ? '#27ae60' : stats.percentage >= 50 ? '#f39c12' : '#e74c3c' }}>
-                        {stats.percentage}%
-                      </div>
-                      <div style={{ color: '#666', fontSize: '0.9rem' }}>
-                        {stats.correct} / {stats.total} correctes
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Stats par jour */}
-                <h3 style={{ fontSize: '1.4rem', marginBottom: '15px' }}>📅 Statistiques par Jour</h3>
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
-                  gap: '10px',
-                  marginBottom: '30px'
-                }}>
-                  {Object.entries(userDetails.statsByDay).map(([day, stats]) => (
-                    <div key={day} style={{
-                      background: 'white',
-                      padding: '15px',
-                      borderRadius: '8px',
-                      textAlign: 'center',
-                      boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-                    }}>
-                      <div style={{ fontSize: '0.8rem', color: '#666', marginBottom: '5px' }}>Jour {day}</div>
-                      <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: stats.percentage >= 75 ? '#27ae60' : stats.percentage >= 50 ? '#f39c12' : '#e74c3c' }}>
-                        {stats.percentage}%
-                      </div>
-                      <div style={{ fontSize: '0.75rem', color: '#999' }}>{stats.correct}/{stats.total}</div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Historique des réponses */}
-                <h3 style={{ fontSize: '1.4rem', marginBottom: '15px' }}>📝 Historique Complet des Réponses</h3>
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse', background: 'white', fontSize: '0.9rem' }}>
-                    <thead>
-                      <tr style={{ background: '#667eea', color: 'white' }}>
-                        <th style={{ padding: '12px', textAlign: 'left' }}>Jour</th>
-                        <th style={{ padding: '12px', textAlign: 'left' }}>Catégorie</th>
-                        <th style={{ padding: '12px', textAlign: 'left' }}>Question</th>
-                        <th style={{ padding: '12px', textAlign: 'left' }}>Réponse</th>
-                        <th style={{ padding: '12px', textAlign: 'center' }}>Résultat</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {userDetails.answersDetails
-                        .sort((a, b) => a.day - b.day || a.questionId - b.questionId)
-                        .map((answer, index) => (
-                        <tr key={index} style={{ 
-                          borderBottom: '1px solid #ddd',
-                          background: answer.isCorrect ? '#d4edda' : '#f8d7da'
-                        }}>
-                          <td style={{ padding: '12px', fontWeight: 'bold' }}>Jour {answer.day}</td>
-                          <td style={{ padding: '12px' }}>
-                            {answer.group === 'Navigation aérienne' && '🧭'} 
-                            {answer.group === 'Contrôle aérien' && '🎧'}
-                            {answer.group === 'Réglementation' && '📜'}
-                            {answer.group === 'Cartes aéronautiques' && '🗺️'}
-                            {' '}{answer.group}
-                          </td>
-                          <td style={{ padding: '12px' }}>{answer.question.substring(0, 60)}...</td>
-                          <td style={{ padding: '12px' }}>
-                            <div style={{ marginBottom: '5px' }}>
-                              <strong>Répondu:</strong> {answer.userAnswerText}
-                            </div>
-                            {!answer.isCorrect && (
-                              <div style={{ color: '#27ae60' }}>
-                                <strong>Correcte:</strong> {answer.correctAnswerText}
-                              </div>
-                            )}
-                          </td>
-                          <td style={{ padding: '12px', textAlign: 'center' }}>
-                            <span style={{
-                              padding: '5px 15px',
-                              borderRadius: '20px',
-                              fontWeight: 'bold',
-                              background: answer.isCorrect ? '#27ae60' : '#e74c3c',
-                              color: 'white'
-                            }}>
-                              {answer.isCorrect ? '✓ Correct' : '✗ Incorrect'}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+          {/* Horaires */}
+          <div style={{ marginBottom: '24px' }}>
+            <h3 style={{ fontSize: '20px', marginBottom: '16px', color: '#667eea' }}>⏰ Horaires des messages Discord</h3>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              {/* Message du matin */}
+              <div style={{ padding: '16px', background: '#f9fafb', borderRadius: '8px' }}>
+                <p style={{ fontWeight: '600', marginBottom: '12px' }}>🌅 Message du matin (Annonce)</p>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <input
+                    type="number"
+                    className="input"
+                    value={morningHour}
+                    onChange={(e) => setMorningHour(e.target.value)}
+                    min="0"
+                    max="23"
+                    style={{ width: '80px' }}
+                  />
+                  <span>h</span>
+                  <input
+                    type="number"
+                    className="input"
+                    value={morningMinute}
+                    onChange={(e) => setMorningMinute(e.target.value)}
+                    min="0"
+                    max="59"
+                    style={{ width: '80px' }}
+                  />
                 </div>
               </div>
-            )}
 
-            {/* LISTE DES PARTICIPANTS */}
-            <div style={{ marginBottom: '40px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h2 style={{ fontSize: '1.8rem' }}>👥 Liste des Participants</h2>
-                <button onClick={handleResetAll} style={{
-                  padding: '12px 24px',
-                  background: '#e74c3c',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '10px',
-                  cursor: 'pointer',
-                  fontSize: '1rem',
-                  fontWeight: 'bold'
-                }}>
-                  🗑️ Reset Complet
-                </button>
-              </div>
-
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr style={{ background: '#f8f9fa', borderBottom: '2px solid #dee2e6' }}>
-                      <th style={{ padding: '15px', textAlign: 'left' }}>Pseudo</th>
-                      <th style={{ padding: '15px', textAlign: 'center' }}>Score</th>
-                      <th style={{ padding: '15px', textAlign: 'center' }}>Date d'inscription</th>
-                      <th style={{ padding: '15px', textAlign: 'center' }}>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.allUsers
-                      .sort((a, b) => b.score - a.score)
-                      .map((user, index) => (
-                        <tr key={index} style={{ 
-                          borderBottom: '1px solid #dee2e6',
-                          background: selectedUser === user.username ? '#e3f2fd' : 'white'
-                        }}>
-                          <td style={{ padding: '15px', fontWeight: 'bold' }}>{user.username}</td>
-                          <td style={{ padding: '15px', textAlign: 'center', fontSize: '1.2rem', color: '#667eea' }}>
-                            {user.score} pts
-                          </td>
-                          <td style={{ padding: '15px', textAlign: 'center', color: '#666' }}>
-                            {new Date(user.createdAt).toLocaleDateString('fr-FR')}
-                          </td>
-                          <td style={{ padding: '15px', textAlign: 'center' }}>
-                            <button
-                              onClick={() => fetchUserDetails(user.username)}
-                              style={{
-                                padding: '8px 16px',
-                                background: '#667eea',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '8px',
-                                cursor: 'pointer',
-                                fontSize: '0.9rem',
-                                marginRight: '10px'
-                              }}
-                            >
-                              📊 Détails
-                            </button>
-                            <button
-                              onClick={() => handleDeleteUser(user.username)}
-                              style={{
-                                padding: '8px 16px',
-                                background: '#e74c3c',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '8px',
-                                cursor: 'pointer',
-                                fontSize: '0.9rem'
-                              }}
-                            >
-                              Supprimer
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
+              {/* Message du soir */}
+              <div style={{ padding: '16px', background: '#f9fafb', borderRadius: '8px' }}>
+                <p style={{ fontWeight: '600', marginBottom: '12px' }}>🌙 Message du soir (Résultats)</p>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <input
+                    type="number"
+                    className="input"
+                    value={eveningHour}
+                    onChange={(e) => setEveningHour(e.target.value)}
+                    min="0"
+                    max="23"
+                    style={{ width: '80px' }}
+                  />
+                  <span>h</span>
+                  <input
+                    type="number"
+                    className="input"
+                    value={eveningMinute}
+                    onChange={(e) => setEveningMinute(e.target.value)}
+                    min="0"
+                    max="59"
+                    style={{ width: '80px' }}
+                  />
+                </div>
               </div>
             </div>
+          </div>
 
-            {/* STATISTIQUES PAR QUESTION */}
-            <div>
-              <h2 style={{ fontSize: '1.8rem', marginBottom: '20px' }}>📈 Statistiques par Question</h2>
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.95rem' }}>
-                  <thead>
-                    <tr style={{ background: '#f8f9fa', borderBottom: '2px solid #dee2e6' }}>
-                      <th style={{ padding: '12px', textAlign: 'left' }}>Jour</th>
-                      <th style={{ padding: '12px', textAlign: 'left' }}>Question</th>
-                      <th style={{ padding: '12px', textAlign: 'center' }}>Réponses</th>
-                      <th style={{ padding: '12px', textAlign: 'center' }}>Correctes</th>
-                      <th style={{ padding: '12px', textAlign: 'center' }}>Taux</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.questionStats.map((stat, index) => (
-                      <tr key={index} style={{ borderBottom: '1px solid #dee2e6' }}>
-                        <td style={{ padding: '12px', fontWeight: 'bold' }}>Jour {stat.day}</td>
-                        <td style={{ padding: '12px' }}>{stat.question.substring(0, 60)}...</td>
-                        <td style={{ padding: '12px', textAlign: 'center' }}>{stat.totalAnswers}</td>
-                        <td style={{ padding: '12px', textAlign: 'center', color: '#27ae60' }}>
-                          {stat.correctAnswers}
-                        </td>
-                        <td style={{ padding: '12px', textAlign: 'center' }}>
-                          <span style={{
-                            padding: '4px 12px',
-                            borderRadius: '20px',
-                            background: stat.successRate >= 70 ? '#d4edda' : stat.successRate >= 50 ? '#fff3cd' : '#f8d7da',
-                            color: stat.successRate >= 70 ? '#155724' : stat.successRate >= 50 ? '#856404' : '#721c24',
-                            fontWeight: 'bold'
-                          }}>
-                            {stat.successRate}%
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </>
-        ) : null}
+          {/* Discord Webhook */}
+          <div style={{ marginBottom: '24px' }}>
+            <h3 style={{ fontSize: '20px', marginBottom: '16px', color: '#667eea' }}>💬 Discord Webhook</h3>
+            <input
+              type="url"
+              className="input"
+              placeholder="https://discord.com/api/webhooks/..."
+              value={discordWebhook}
+              onChange={(e) => setDiscordWebhook(e.target.value)}
+              required
+            />
+          </div>
+
+          {/* Bouton sauvegarder */}
+          <button 
+            type="submit" 
+            className="btn btn-primary" 
+            disabled={loading}
+            style={{ width: '100%', marginBottom: '16px' }}
+          >
+            {loading ? '⏳ Sauvegarde...' : '💾 Sauvegarder la configuration'}
+          </button>
+        </form>
+
+        {/* Boutons test webhook */}
+        <div style={{ marginTop: '32px', paddingTop: '24px', borderTop: '2px solid #e5e7eb' }}>
+          <h3 style={{ fontSize: '20px', marginBottom: '16px', color: '#667eea' }}>🧪 Test des webhooks Discord</h3>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <button 
+              className="btn btn-secondary" 
+              onClick={handleTestMorning}
+              disabled={loading}
+              style={{ padding: '16px' }}
+            >
+              🌅 Tester message du matin
+            </button>
+            
+            <button 
+              className="btn btn-secondary" 
+              onClick={handleTestEvening}
+              disabled={loading}
+              style={{ padding: '16px' }}
+            >
+              🌙 Tester message du soir
+            </button>
+          </div>
+          
+          <p style={{ marginTop: '12px', fontSize: '14px', color: '#6b7280', fontStyle: 'italic' }}>
+            💡 Ces boutons envoient immédiatement les messages sur Discord pour tester la configuration
+          </p>
+        </div>
       </div>
     </div>
   );
 }
+
+export default AdminPage;
