@@ -412,7 +412,7 @@ export const questions = [
     id: 28,
     day: 7,
     group: "Cartes aéronautiques",
-    image: "Q82.png",
+    image: "q82.png",
     question: "Cette flèche de vent indique :",
     options: [
       "65 Kts",
@@ -473,7 +473,7 @@ export const questions = [
     id: 32,
     day: 8,
     group: "Cartes aéronautiques",
-    image: "Q83.png",
+    image: "q83.png",
     question: "Sur une carte VAC, le cercle bleu correspond à :",
     options: [
       "Une zone dont le survol est à éviter",
@@ -654,7 +654,7 @@ export const questions = [
     id: 44,
     day: 11,
     group: "Cartes aéronautiques",
-    image: "Q86.png",
+    image: "q86.png",
     question: "Sur cette carte, la flèche bleue signifie :",
     options: [
       "Informations radiales/distances par rapport à un repère donné",
