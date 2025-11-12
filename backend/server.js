@@ -1,7 +1,7 @@
 // ========================================
 // 🧪 MODE TEST - CONFIGURATION (facultatif)
 // ========================================
-const TEST_MODE = false;            // ← false en production
+const TEST_MODE = true;            // ← false en production
 const TEST_DAY = 25;               // ← Jour simulé (1-25)
 const TEST_ALWAYS_OPEN = true;     // ← Ignore la fenêtre horaire en test
 // ========================================
@@ -23,14 +23,31 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// 🛡️ Secrets / Config via ENV (aucun fallback en dur)
-const DISCORD_WEBHOOK = process.env.DISCORD_WEBHOOK; // requis en prod
-const ADMIN_PASSWORD  = process.env.ADMIN_PASSWORD;  // requis pour /api/admin/*
+// 🛡️ Secrets / Config via ENV
+const DISCORD_WEBHOOK = process.env.DISCORD_WEBHOOK;
+const ADMIN_PASSWORD  = process.env.ADMIN_PASSWORD;
 const TZ              = process.env.TZ || 'Europe/Paris';
+const DATA_FILE       = path.join(__dirname, 'data.json');
 
-const DATA_FILE = path.join(__dirname, 'data.json');
+// ✅ CORS FIX : autoriser le front Netlify
+const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS ||
+  'https://calendrier-de-l-avant-jtff.netlify.app'
+).split(',').map(s => s.trim());
 
-app.use(cors());
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
+    return callback(new Error('Origin not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // gérer les pré-requêtes OPTIONS
+
 app.use(express.json());
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
@@ -231,28 +248,6 @@ app.get('/api/admin/cron-status', async (_req, res) => {
 cron.schedule('0 8 * 11 *',  () => sendMorningDiscordMessage(), { timezone: TZ });
 cron.schedule('30 23 * 11 *', () => sendEveningDiscordMessage(), { timezone: TZ });
 console.log('[CRON] Planifié (TZ=%s): 08:00 & 23:30 en novembre', TZ);
-
-// Rattrapage au démarrage
-(async () => {
-  try {
-    const now = nowParis();
-    const key = todayKey();
-    const h = now.getHours(), m = now.getMinutes();
-    const data = await readData();
-    data.flags[key] = data.flags[key] || {};
-
-    if (!data.flags[key].morning && (h === 8 && m <= 5)) {
-      console.log('[CRON] Rattrapage: matin');
-      await sendMorningDiscordMessage();
-    }
-    if (!data.flags[key].evening && (h === 23 && m >= 30 && m <= 35)) {
-      console.log('[CRON] Rattrapage: soir');
-      await sendEveningDiscordMessage();
-    }
-  } catch (e) {
-    console.error('[CRON] Rattrapage ERREUR:', e.message);
-  }
-})();
 
 // ---------- Start ----------
 async function startServer() {
