@@ -1,5 +1,11 @@
+// Questions du calendrier de l'Avent - Navigation Aérienne
+// 100 questions réparties sur 25 jours (4 par jour)
+// Chaque question a maintenant une explication !
+
 export const questions = [
-  // JOUR 1 - Une question de chaque groupe.
+  // ========================================
+  // JOUR 1
+  // ========================================
   {
     id: 1,
     day: 1,
@@ -11,10 +17,11 @@ export const questions = [
       "La route vraie dépend de la dérive",
       "Elles sont identiques"
     ],
-    correctAnswer: 1
+    correctAnswer: 1,
+    explanation: "La route vraie est mesurée par rapport au nord géographique, la route magnétique par rapport au nord magnétique. Source : OACI Annexe 4 – Cartes aéronautiques."
   },
   {
-    id: 26,
+    id: 2,
     day: 1,
     group: "Contrôle aérien",
     question: "Quel est le rôle principal du contrôle aérien ?",
@@ -24,23 +31,25 @@ export const questions = [
       "Gérer les services au sol",
       "Superviser les équipages"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "Le contrôle aérien prévient les collisions et assure la fluidité du trafic. Source : OACI Annexe 11."
   },
   {
-    id: 51,
+    id: 3,
     day: 1,
-    group: "Réglementation aérienne",
-    question: "En VFR de jour, le vol doit se faire avec une visibilité minimale de :",
+    group: "Réglementation",
+    question: "Quelle est la visibilité minimale en vol VFR de classe G en dessous de 3000 ft AMSL ?",
     options: [
       "1 km",
+      "3 km",
       "5 km",
-      "10 km",
-      "3 km"
+      "8 km"
     ],
-    correctAnswer: 1
+    correctAnswer: 2,
+    explanation: "En classe G en dessous de 3000 ft AMSL, la visibilité minimale en VFR est de 5 km. Source : SERA.5005."
   },
   {
-    id: 76,
+    id: 4,
     day: 1,
     group: "Cartes aéronautiques",
     question: "Sur une carte OACI 1:500 000, 1 cm représente :",
@@ -50,25 +59,29 @@ export const questions = [
       "5 NM",
       "1,85 NM"
     ],
-    correctAnswer: 1
+    correctAnswer: 1,
+    explanation: "À cette échelle, 1 cm sur la carte équivaut à 5 km, soit environ 2,7 NM. Source : IGN / OACI – Carte VFR France."
   },
 
+  // ========================================
   // JOUR 2
+  // ========================================
   {
-    id: 2,
+    id: 5,
     day: 2,
     group: "Navigation aérienne",
     question: "Si la déclinaison magnétique est de 10° Est, la route magnétique sera :",
     options: [
-      "RV + 10°",
-      "RV – 10°",
-      "RM + 10°",
+      "Route Vraie + 10°",
+      "Route Vraie – 10°",
+      "Route Magnétique + 10°",
       "Impossible à déterminer"
     ],
-    correctAnswer: 1
+    correctAnswer: 1,
+    explanation: "Si la déclinaison est Est, on soustrait la valeur à la route vraie pour obtenir la route magnétique. Source : Manuel de navigation DGAC."
   },
   {
-    id: 27,
+    id: 6,
     day: 2,
     group: "Contrôle aérien",
     question: "En espace contrôlé, le pilote doit :",
@@ -78,23 +91,25 @@ export const questions = [
       "Être équipé de radar météo",
       "Avoir un copilote"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "Le contact radio permanent avec l'ATC est obligatoire pour tout vol dans un espace contrôlé. Source : SERA.6001."
   },
   {
-    id: 52,
+    id: 7,
     day: 2,
-    group: "Réglementation aérienne",
-    question: "L'altitude de transition est :",
+    group: "Réglementation",
+    question: "Quelle est la distance minimale par rapport aux nuages en classe G sous 3000 ft AMSL ?",
     options: [
-      "Fixée à 5000 ft",
-      "Variable selon l'aérodrome",
-      "Toujours 3000 ft",
-      "Fixée par l'ATIS"
+      "Hors des nuages, en vue du sol",
+      "300 m horizontal, 150 m vertical",
+      "1000 m horizontal, 300 m vertical",
+      "1500 m horizontal, 300 m vertical"
     ],
-    correctAnswer: 1
+    correctAnswer: 0,
+    explanation: "En classe G sous 3000 ft AMSL, le pilote doit rester hors des nuages et en vue du sol. Source : SERA.5005."
   },
   {
-    id: 77,
+    id: 8,
     day: 2,
     group: "Cartes aéronautiques",
     question: "Les zones P, R, D signifient respectivement :",
@@ -104,12 +119,15 @@ export const questions = [
       "Protected, Regulated, Danger",
       "Privée, Réservée, Délimitée"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "P = interdite, R = restreinte, D = dangereuse ; symboles OACI standard. Source : AIP France ENR 5.1."
   },
 
+  // ========================================
   // JOUR 3
+  // ========================================
   {
-    id: 3,
+    id: 9,
     day: 3,
     group: "Navigation aérienne",
     question: "Le cap compas (CC) diffère du cap magnétique (CM) à cause :",
@@ -119,10 +137,11 @@ export const questions = [
       "Du vent",
       "Du gyro"
     ],
-    correctAnswer: 1
+    correctAnswer: 1,
+    explanation: "La déviation est due aux perturbations magnétiques internes de l'aéronef. Source : DGAC – Manuel du pilote privé."
   },
   {
-    id: 28,
+    id: 10,
     day: 3,
     group: "Contrôle aérien",
     question: "Le code transpondeur 7000 correspond à :",
@@ -132,38 +151,43 @@ export const questions = [
       "Vol VFR standard",
       "Panne radio"
     ],
-    correctAnswer: 2
+    correctAnswer: 2,
+    explanation: "7000 est le code standard pour les vols VFR en Europe. Source : SERA.13001."
   },
   {
-    id: 53,
+    id: 11,
     day: 3,
-    group: "Réglementation aérienne",
-    question: "Le calage altimétrique standard est :",
+    group: "Réglementation",
+    question: "En classe D, un vol VFR doit :",
     options: [
-      "1013,25 hPa",
-      "1000 hPa",
-      "1010,00 hPa",
-      "1020,25 hPa"
+      "Recevoir une clearance et des informations de trafic",
+      "Voler en IFR uniquement",
+      "Avoir un plan de vol déposé",
+      "Être guidé en permanence"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "En classe D, le VFR reçoit une autorisation (clearance) et des informations de trafic. Source : SERA.6001."
   },
   {
-    id: 78,
+    id: 12,
     day: 3,
     group: "Cartes aéronautiques",
-    question: "Une zonne R est :",
+    question: "Une zone R est :",
     options: [
       "Interdite en tout temps",
       "Soumise à autorisation préalable",
       "Réservée aux IFR",
       "Toujours active"
     ],
-    correctAnswer: 1
+    correctAnswer: 1,
+    explanation: "Une zone R est restreinte et nécessite autorisation du gestionnaire avant pénétration. Source : AIP France ENR 5.1."
   },
 
+  // ========================================
   // JOUR 4
+  // ========================================
   {
-    id: 4,
+    id: 13,
     day: 4,
     group: "Navigation aérienne",
     question: "Le vent de face a pour effet :",
@@ -173,10 +197,11 @@ export const questions = [
       "D'augmenter la vitesse indiquée",
       "De modifier la route"
     ],
-    correctAnswer: 1
+    correctAnswer: 1,
+    explanation: "Un vent de face réduit la vitesse sol car il s'oppose à la progression de l'aéronef. Source : OACI PANS-OPS Vol I."
   },
   {
-    id: 29,
+    id: 14,
     day: 4,
     group: "Contrôle aérien",
     question: "Le code 7600 signifie :",
@@ -184,25 +209,27 @@ export const questions = [
       "Détournement",
       "Urgence médicale",
       "Panne radio",
-      "Perte de radar secondaire"
+      "Vol militaire"
     ],
-    correctAnswer: 2
+    correctAnswer: 2,
+    explanation: "7600 indique une panne radio complète. Source : SERA.13001."
   },
   {
-    id: 54,
+    id: 15,
     day: 4,
-    group: "Réglementation aérienne",
-    question: "Le FL correspond à :",
+    group: "Réglementation",
+    question: "Un plan de vol VFR doit être déposé :",
     options: [
-      "Altitude vraie",
-      "Niveau de vol basé sur 1013 hPa",
-      "Hauteur sol",
-      "Altitude GPS"
+      "Uniquement pour les vols internationaux",
+      "Pour tout vol dépassant 30 km",
+      "Pour les vols de plus de 100 km ou franchissant une frontière",
+      "Pour tous les vols VFR"
     ],
-    correctAnswer: 1
+    correctAnswer: 2,
+    explanation: "Le dépôt de plan de vol VFR est obligatoire pour les vols de plus de 100 km ou internationaux. Source : SERA.4001."
   },
   {
-    id: 79,
+    id: 16,
     day: 4,
     group: "Cartes aéronautiques",
     question: "Les lignes bleues épaisses sur une carte VFR indiquent :",
@@ -212,12 +239,15 @@ export const questions = [
       "Des fleuves",
       "Des zones militaires"
     ],
-    correctAnswer: 1
+    correctAnswer: 1,
+    explanation: "Elles délimitent les CTR, TMA ou espaces aériens de classe D ou C. Source : OACI Annexe 4."
   },
 
+  // ========================================
   // JOUR 5
+  // ========================================
   {
-    id: 5,
+    id: 17,
     day: 5,
     group: "Navigation aérienne",
     question: "Quelle est la formule de la dérive approximative ?",
@@ -227,51 +257,57 @@ export const questions = [
       "(Vent latéral / Vitesse vraie) × 60",
       "(Cap × Vent) / 100"
     ],
-    correctAnswer: 2
+    correctAnswer: 2,
+    explanation: "La dérive dépend du vent latéral et de la vitesse vraie, ramenée à une base de 60 NM/h. Source : DGAC – Manuel de navigation."
   },
   {
-    id: 30,
+    id: 18,
     day: 5,
     group: "Contrôle aérien",
-    question: "Le code 7700 est utilisé pour :",
+    question: "En approche finale, le pilote reçoit l'autorisation \"Cleared to land\". Cela signifie :",
     options: [
-      "Panne moteur",
-      "Urgence générale",
-      "Détournement",
-      "Perte d'altimètre"
+      "Vous pouvez atterrir",
+      "Vous devez atterrir immédiatement",
+      "La piste est libre",
+      "Vous êtes prioritaire sur tous les autres trafics"
     ],
-    correctAnswer: 1
+    correctAnswer: 0,
+    explanation: "\"Cleared to land\" autorise l'atterrissage, mais le pilote reste responsable de vérifier que la piste est libre. Source : OACI Doc 4444."
   },
   {
-    id: 55,
+    id: 19,
     day: 5,
-    group: "Réglementation aérienne",
-    question: "En VFR, la hauteur minimal au-dessus d'une agglomérations de largeur moyenne comprise entre 1200 m et 3600 m et de :",
+    group: "Réglementation",
+    question: "En France, la règle semi-circulaire VFR s'applique à partir de :",
     options: [
-      "500 ft",
-      "3300 ft",
-      "1700 ft",
-      "5000 ft"
+      "La surface",
+      "1500 ft AMSL",
+      "3000 ft AMSL",
+      "5000 ft AMSL"
     ],
-    correctAnswer: 1
+    correctAnswer: 2,
+    explanation: "La règle semi-circulaire commence à 3000 ft AMSL. Source : SERA.5005."
   },
   {
-    id: 80,
+    id: 20,
     day: 5,
     group: "Cartes aéronautiques",
-    question: "Un aéroport non controler et indiquer par :",
+    question: "Un aérodrome non contrôlé est indiqué par :",
     options: [
-      "Un cercle bleu vide",
-      "Un cercle noir avec une croix",
+      "Un cercle bleu",
+      "Un cercle bleu plein",
       "Un carré rouge",
-      "Un cercle bleu plein"
+      "Un cercle bleu vide"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "Sur une carte OACI, un cercle bleu simple indique un aérodrome non contrôlé ou avec un agent AFIS. Source : Légende carte OACI France."
   },
 
+  // ========================================
   // JOUR 6
+  // ========================================
   {
-    id: 6,
+    id: 21,
     day: 6,
     group: "Navigation aérienne",
     question: "Quelle unité utilise-t-on pour mesurer la vitesse du vent en aviation ?",
@@ -281,105 +317,118 @@ export const questions = [
       "Nœuds",
       "Pieds/min"
     ],
-    correctAnswer: 2
+    correctAnswer: 2,
+    explanation: "1 nœud = 1 mille nautique par heure. Source : OACI Annexe 5 – Unités de mesure."
   },
   {
-    id: 31,
+    id: 22,
     day: 6,
     group: "Contrôle aérien",
-    question: "Le code 7500 signifie :",
+    question: "Que signifie l'instruction \"Orbit left\" ?",
     options: [
-      "Détournement / Hijack",
-      "Urgence médicale",
-      "Incendie",
-      "Panne d'instruments"
+      "Tourner à gauche",
+      "Faire un 360° à gauche",
+      "Virer à gauche puis à droite",
+      "Rester en attente"
     ],
-    correctAnswer: 0
+    correctAnswer: 1,
+    explanation: "\"Orbit left\" demande un tour complet (360°) vers la gauche. Source : OACI Doc 4444."
   },
   {
-    id: 56,
+    id: 23,
     day: 6,
-    group: "Réglementation aérienne",
-    question: "Le plan de vol doit être déposé au moins :",
+    group: "Réglementation",
+    question: "Quelle est la vitesse maximale en dessous de 10 000 ft ?",
     options: [
-      "10 minutes avant départ",
-      "30 minutes avant départ",
-      "1 heure avant",
-      "15 minutes après départ"
+      "200 kt",
+      "220 kt",
+      "250 kt",
+      "300 kt"
     ],
-    correctAnswer: 1
+    correctAnswer: 2,
+    explanation: "Limite réglementaire pour maintenir une séparation suffisante. Source : SERA.6005."
   },
   {
-    id: 81,
+    id: 24,
     day: 6,
     group: "Cartes aéronautiques",
     question: "Les altitudes minimales de sécurité sont indiquées sur :",
     options: [
-      "Les cartes VFR",
-      "Les cartes IFR (ENR)",
+      "Les cartes IFR uniquement",
+      "Les cartes IFR et VFR",
       "Les cartes VAC",
       "Les cartes météo"
     ],
-    correctAnswer: 1
+    correctAnswer: 1,
+    explanation: "Les altitudes minimales de sécurité figurent sur les cartes IFR (ENR 6) pour éviter les obstacles. Source : AIP France ENR 6."
   },
 
+  // ========================================
   // JOUR 7
+  // ========================================
   {
-    id: 7,
+    id: 25,
     day: 7,
     group: "Navigation aérienne",
-    question: "Un NM (Mille nautique) correspond à :",
+    question: "Un NM (mille nautique) correspond à :",
     options: [
       "1,609 km",
       "1,852 km",
       "1,944 km",
       "1,789 km"
     ],
-    correctAnswer: 1
+    correctAnswer: 1,
+    explanation: "1 NM équivaut à 1 minute d'arc terrestre, soit 1,852 km. Source : OACI Annexe 5."
   },
   {
-    id: 32,
+    id: 26,
     day: 7,
     group: "Contrôle aérien",
-    question: "Que signifie l'acronyme ATIS ?",
+    question: "Un QNH de 1013 hPa correspond à :",
     options: [
-      "Automatic Terminal Information Service",
-      "Air Traffic Information System",
-      "Air Traffic Instant Signal",
-      "Automated Track Information"
+      "Pression standard au niveau de la mer",
+      "Altitude pression",
+      "QFE de l'aérodrome",
+      "QFF corrigé"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "1013,25 hPa est la pression atmosphérique standard au niveau de la mer (ISA). Source : OACI Annexe 3."
   },
   {
-    id: 57,
+    id: 27,
     day: 7,
-    group: "Réglementation aérienne",
-    question: "Le code OACI d'un aéroport français commence par :",
+    group: "Réglementation",
+    question: "En VFR, le niveau de croisière est choisi :",
     options: [
-      "LF",
-      "FR",
-      "FX",
-      "AF"
+      "Selon la route vraie",
+      "Selon la route magnétique",
+      "Selon le vent",
+      "Selon l'altitude du terrain"
     ],
-    correctAnswer: 0
+    correctAnswer: 1,
+    explanation: "Les niveaux VFR sont déterminés selon la route magnétique : impair (000–179°), pair (180–359°). Source : SERA.5005."
   },
   {
-    id: 82,
+    id: 28,
     day: 7,
     group: "Cartes aéronautiques",
-    question: "Une flèche de vent sur carte météo indique :",
+    image: "Q82.png",
+    question: "Cette flèche de vent indique :",
     options: [
-      "Le sens du vent",
-      "La force uniquement",
-      "La direction magnétique",
-      "L'intensité du trafic"
+      "65 Kts",
+      "60 Kts",
+      "45 kts",
+      "75 Kts"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "Le triangle indique 50, une barre complète indique 10 et une demi-barre indique 5. Source : Météo-France / OACI Annexe 3."
   },
 
+  // ========================================
   // JOUR 8
+  // ========================================
   {
-    id: 8,
+    id: 29,
     day: 8,
     group: "Navigation aérienne",
     question: "La vitesse indiquée (IAS) ne tient pas compte :",
@@ -389,52 +438,58 @@ export const questions = [
       "De la pression",
       "Du vent"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "L'IAS dépend de la pression dynamique mais pas de la densité réelle. Source : OACI Doc 8168."
   },
   {
-    id: 33,
+    id: 30,
     day: 8,
     group: "Contrôle aérien",
-    question: "Dans la JTFF, quelle est la phrase correcte pour demander une clairance de roulage ?",
+    question: "Que signifie \"Roger\" ?",
     options: [
-      "\"Tower, ready to taxi.\"",
-      "\"TIGER 11, request taxi [type of departure]\"",
-      "\"Approach, taxi request.\"",
-      "\"Tower, permission to go.\""
+      "J'ai reçu votre message",
+      "Je comprends",
+      "D'accord",
+      "Affirmatif"
     ],
-    correctAnswer: 1
+    correctAnswer: 0,
+    explanation: "\"Roger\" signifie uniquement que le message a été reçu, pas nécessairement compris. Source : OACI Annexe 10."
   },
   {
-    id: 58,
+    id: 31,
     day: 8,
-    group: "Réglementation aérienne",
-    question: "L'indicatif d'un avion en vol VFR est basé sur :",
+    group: "Réglementation",
+    question: "En France, la phraséologie se fait principalement en :",
     options: [
-      "Le call-sign compagnie",
-      "L'immatriculation",
-      "Le numéro de plan de vol",
-      "Le modèle avion"
+      "Français et Anglais",
+      "Français uniquement",
+      "Anglais uniquement",
+      "Langue locale"
     ],
-    correctAnswer: 1
+    correctAnswer: 0,
+    explanation: "Les deux langues officielles sont autorisées sur les fréquences nationales. Source : AIP France GEN 3.4."
   },
   {
-    id: 83,
+    id: 32,
     day: 8,
     group: "Cartes aéronautiques",
-    question: "Sur cette carte VAC, le cercle rouge correspond :",
-    image: "/images/question83.png",
+    image: "Q83.png",
+    question: "Sur une carte VAC, le cercle bleu correspond à :",
     options: [
-      "Une zone d'ont le survol et a éviter",
-      "Une zone d'ont le survol interdit",
-      "Une zone d'ont le survol et obligatoire",
-      "Un lieu a faible densité de population"
+      "Une zone dont le survol est à éviter",
+      "Une zone dont le survol est interdit",
+      "Une zone où le survol est obligatoire",
+      "Une zone à faible densité de population"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "Ces zones signalent un survol à éviter pour cause de bruit ou de sécurité. Source : Légende VAC – SIA France."
   },
 
+  // ========================================
   // JOUR 9
+  // ========================================
   {
-    id: 9,
+    id: 33,
     day: 9,
     group: "Navigation aérienne",
     question: "Quelle est la principale utilisation du conservateur de cap ?",
@@ -444,36 +499,39 @@ export const questions = [
       "Mesurer la vitesse",
       "Afficher le vent"
     ],
-    correctAnswer: 1
+    correctAnswer: 1,
+    explanation: "Le conservateur de cap est gyroscopique, donc insensible aux variations magnétiques. Source : DGAC – Manuel de pilotage."
   },
   {
     id: 34,
     day: 9,
     group: "Contrôle aérien",
-    question: "Un pilote reçoit l'instruction \"Hold short J runway 26\". Cela signifie :",
+    question: "La phrase \"Say again\" signifie :",
     options: [
-      "Traverser la piste 26",
-      "Attendre au point d'attente J avant la piste 26",
-      "Décoller immédiatement",
-      "Rouler sur la piste"
+      "Répétez votre message",
+      "Parlez plus fort",
+      "Changez de fréquence",
+      "Attendez"
     ],
-    correctAnswer: 1
+    correctAnswer: 0,
+    explanation: "\"Say again\" demande la répétition du dernier message. Source : OACI Annexe 10."
   },
   {
-    id: 59,
+    id: 35,
     day: 9,
-    group: "Réglementation aérienne",
-    question: "En espace de classe C, la séparation est assurée :",
+    group: "Réglementation",
+    question: "Le vol à vue (VFR) est interdit :",
     options: [
-      "Entre IFR uniquement",
-      "Entre IFR et VFR également",
-      "Entre VFR seulement",
-      "Aucunement"
+      "Au-dessus du FL195",
+      "Au-dessus du FL245",
+      "En dessous du FL50",
+      "Dans les CTR"
     ],
-    correctAnswer: 1
+    correctAnswer: 0,
+    explanation: "Le FL195 marque la limite supérieure du VFR dans l'espace aérien supérieur (classe A). Source : SERA.5005."
   },
   {
-    id: 84,
+    id: 36,
     day: 9,
     group: "Cartes aéronautiques",
     question: "La déclinaison magnétique est indiquée sur les cartes :",
@@ -483,12 +541,15 @@ export const questions = [
       "Aucune",
       "AIP uniquement"
     ],
-    correctAnswer: 1
+    correctAnswer: 1,
+    explanation: "Elle permet la conversion entre route vraie et route magnétique. Source : OACI Annexe 4."
   },
 
+  // ========================================
   // JOUR 10
+  // ========================================
   {
-    id: 10,
+    id: 37,
     day: 10,
     group: "Navigation aérienne",
     question: "En vol VFR, la navigation à l'estime consiste à :",
@@ -498,36 +559,39 @@ export const questions = [
       "Utiliser le GPS",
       "Lire la carte uniquement"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "La navigation à l'estime repose sur le cap, la vitesse, le temps et la distance parcourue. Source : OACI Doc 9613 – Performance-Based Navigation."
   },
   {
-    id: 35,
+    id: 38,
     day: 10,
     group: "Contrôle aérien",
-    question: "\"Line up and wait\" signifie :",
+    question: "\"Standby\" signifie :",
     options: [
-      "Rouler sur le taxiway",
-      "Entrer sur la piste et attendre l'autorisation de décoller",
-      "Décoller immédiatement",
-      "Quitter la piste"
+      "Restez à l'écoute, je vous rappelle",
+      "Maintenez votre position",
+      "Préparez-vous au décollage",
+      "Attendez l'autorisation"
     ],
-    correctAnswer: 1
+    correctAnswer: 0,
+    explanation: "\"Standby\" demande d'attendre un instant sur la fréquence. Source : OACI Annexe 10."
   },
   {
-    id: 60,
+    id: 39,
     day: 10,
-    group: "Réglementation aérienne",
-    question: "\"CTR\" signifie :",
+    group: "Réglementation",
+    question: "L'équipement obligatoire pour un vol VFR de jour inclut :",
     options: [
-      "Control Terminal Region",
-      "Control Traffic Region",
-      "Control Traffic aiRspace",
-      "Transit Corridor"
+      "Un extincteur",
+      "Une radio VHF",
+      "Des feux de navigation",
+      "Un GPS"
     ],
-    correctAnswer: 1
+    correctAnswer: 1,
+    explanation: "La radio VHF est obligatoire en espace contrôlé. Source : SERA.3215."
   },
   {
-    id: 85,
+    id: 40,
     day: 10,
     group: "Cartes aéronautiques",
     question: "Que signifie MEA :",
@@ -537,12 +601,15 @@ export const questions = [
       "Maximum Entry Route",
       "Message En Route"
     ],
-    correctAnswer: 1
+    correctAnswer: 1,
+    explanation: "Altitude minimale sur une route IFR garantissant séparation, couverture radio et sécurité obstacle. Source : OACI Doc 8168."
   },
 
+  // ========================================
   // JOUR 11
+  // ========================================
   {
-    id: 11,
+    id: 41,
     day: 11,
     group: "Navigation aérienne",
     question: "Quelle information fournit un VOR ?",
@@ -552,52 +619,58 @@ export const questions = [
       "Azimut magnétique par rapport à la station",
       "Position géographique exacte"
     ],
-    correctAnswer: 2
+    correctAnswer: 2,
+    explanation: "Le VOR indique le radial magnétique à partir de la station. Source : OACI Annexe 10."
   },
   {
-    id: 36,
+    id: 42,
     day: 11,
     group: "Contrôle aérien",
-    question: "La phrase \"Cleared for takeoff\" est donné :",
+    question: "La tour de contrôle est désignée par l'abréviation :",
     options: [
-      "Par l'approche",
-      "Par la Tour",
-      "Par le Sol",
-      "Par l'ATIS"
+      "APP",
+      "TWR",
+      "ACC",
+      "GND"
     ],
-    correctAnswer: 1
+    correctAnswer: 1,
+    explanation: "TWR (Tower) gère les mouvements sur l'aérodrome et dans la CTR. Source : OACI Annexe 11."
   },
   {
-    id: 61,
+    id: 43,
     day: 11,
-    group: "Réglementation aérienne",
-    question: "Un vol VFR spécial est :",
+    group: "Réglementation",
+    question: "La limite inférieure d'un espace aérien est exprimée en :",
     options: [
-      "Un vol IFR d'entraînement",
-      "Un vol autorisé dans des conditions marginales",
-      "Un vol militaire",
-      "Un vol d'urgence"
+      "Altitude (AMSL) ou hauteur (AGL)",
+      "Pieds uniquement",
+      "Niveaux de vol uniquement",
+      "Mètres"
     ],
-    correctAnswer: 1
+    correctAnswer: 0,
+    explanation: "Les limites peuvent être en altitude (AMSL) ou hauteur (AGL) selon le contexte. Source : OACI Annexe 11."
   },
   {
-    id: 86,
+    id: 44,
     day: 11,
     group: "Cartes aéronautiques",
+    image: "Q86.png",
     question: "Sur cette carte, la flèche bleue signifie :",
-    image: "/images/question86.png",
     options: [
-      "La direction d'une balise / Aéroport avec une distance",
+      "Informations radiales/distances par rapport à un repère donné",
       "Des trajectoires recommandées",
       "Une altitude",
       "Une balise"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "Indique un axe de relèvement (QDR/QDM) et distance depuis un repère (souvent balise ou aérodrome). Source : Légende VAC – SIA France."
   },
 
+  // ========================================
   // JOUR 12
+  // ========================================
   {
-    id: 12,
+    id: 45,
     day: 12,
     group: "Navigation aérienne",
     question: "Un DME indique :",
@@ -607,36 +680,39 @@ export const questions = [
       "Le vent",
       "La route magnétique"
     ],
-    correctAnswer: 1
+    correctAnswer: 1,
+    explanation: "Le DME mesure la distance en ligne droite entre l'aéronef et la balise. Source : OACI Annexe 10."
   },
   {
-    id: 37,
+    id: 46,
     day: 12,
     group: "Contrôle aérien",
-    question: "\"Contact Departure 118.200\" signifie :",
+    question: "L'approche (APP) gère :",
     options: [
-      "Le pilote doit changer de fréquence pour contacter le depart",
-      "Il reste sur la tour",
-      "Il revient au sol",
-      "Il coupe la radio"
+      "Les départs",
+      "Les arrivées et départs dans la TMA",
+      "Les vols en route",
+      "Le sol uniquement"
     ],
-    correctAnswer: 0
+    correctAnswer: 1,
+    explanation: "APP coordonne les arrivées et départs dans la zone terminale (TMA). Source : OACI Annexe 11."
   },
   {
-    id: 62,
+    id: 47,
     day: 12,
-    group: "Réglementation aérienne",
-    question: "Le plafond minimum pour le VFR spécial est :",
+    group: "Réglementation",
+    question: "Un espace aérien de classe A est :",
     options: [
-      "600 ft",
-      "1500 ft",
-      "600 m",
-      "1000 m"
+      "Réservé aux vols IFR",
+      "Ouvert aux VFR avec clearance",
+      "Non contrôlé",
+      "Mixte IFR/VFR"
     ],
-    correctAnswer: 2
+    correctAnswer: 0,
+    explanation: "Seuls les vols IFR sont autorisés en classe A. Source : OACI Annexe 11."
   },
   {
-    id: 87,
+    id: 48,
     day: 12,
     group: "Cartes aéronautiques",
     question: "Une TMA est représentée par :",
@@ -646,12 +722,15 @@ export const questions = [
       "Des pointillés",
       "Des hachures"
     ],
-    correctAnswer: 1
+    correctAnswer: 1,
+    explanation: "Les zones TMA sont représentées par des traits bleus avec limites verticales indiquées. Source : OACI Annexe 4."
   },
 
+  // ========================================
   // JOUR 13
+  // ========================================
   {
-    id: 13,
+    id: 49,
     day: 13,
     group: "Navigation aérienne",
     question: "Quelle est la précision d'un VOR conventionnel ?",
@@ -661,36 +740,39 @@ export const questions = [
       "±10°",
       "±1°"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "La tolérance d'erreur d'un VOR est de ±2° selon les normes OACI. Source : OACI Doc 8071."
   },
   {
-    id: 38,
+    id: 50,
     day: 13,
     group: "Contrôle aérien",
-    question: "Que veut dire \"Maintain runway heading\" ?",
+    question: "Le centre de contrôle en route est appelé :",
     options: [
-      "Suivre le cap magnétique du terrain",
-      "Garder le cap de la piste après décollage",
-      "Voler vers la piste",
-      "Tourner à gauche après rotation"
+      "TWR",
+      "APP",
+      "ACC",
+      "FIS"
     ],
-    correctAnswer: 1
+    correctAnswer: 2,
+    explanation: "ACC (Area Control Center) gère les vols en route. Source : OACI Annexe 11."
   },
   {
-    id: 63,
+    id: 51,
     day: 13,
-    group: "Réglementation aérienne",
-    question: "Le sigle TMA signifie :",
+    group: "Réglementation",
+    question: "En classe B, les vols VFR doivent :",
     options: [
-      "Terminal Maneuvering Area",
-      "Tower Managed Airspace",
-      "Transit Military Area",
-      "Traffic Management Area"
+      "Obtenir une clearance et rester séparés",
+      "Voler sans clearance",
+      "Éviter les IFR",
+      "Suivre uniquement les règles de séparation visuelle"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "Les vols VFR en classe B reçoivent une clearance et sont séparés de tous les trafics. Source : OACI Annexe 11."
   },
   {
-    id: 88,
+    id: 52,
     day: 13,
     group: "Cartes aéronautiques",
     question: "Le relief est indiqué sur une carte par :",
@@ -700,12 +782,15 @@ export const questions = [
       "Des zones ombrées",
       "Des cercles rouges"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "Les dégradés de couleur représentent les altitudes du terrain. Source : OACI Annexe 4 ; IGN."
   },
 
+  // ========================================
   // JOUR 14
+  // ========================================
   {
-    id: 14,
+    id: 53,
     day: 14,
     group: "Navigation aérienne",
     question: "Quelle est la différence entre un ADF et un VOR ?",
@@ -715,51 +800,57 @@ export const questions = [
       "Le VOR fonctionne sur basse fréquence",
       "L'ADF est utilisé en IFR seulement"
     ],
-    correctAnswer: 1
+    correctAnswer: 1,
+    explanation: "L'ADF capte les ondes d'une NDB et indique le relèvement vers celle-ci. Source : OACI Annexe 10."
   },
   {
-    id: 39,
+    id: 54,
     day: 14,
     group: "Contrôle aérien",
-    question: "Quelle est la fréquence d'urgence VHF internationale utilisée en aviation ?",
+    question: "Une clearance ATC est :",
     options: [
-      "118.000 MHz",
-      "121.500 MHz",
-      "123.450 MHz",
-      "243.000 MHz"
+      "Une autorisation de vol",
+      "Une demande d'information",
+      "Un avis de trafic",
+      "Un message météo"
     ],
-    correctAnswer: 1
+    correctAnswer: 0,
+    explanation: "La clearance autorise un aéronef à évoluer selon des conditions spécifiques. Source : OACI Doc 4444."
   },
   {
-    id: 64,
+    id: 55,
     day: 14,
-    group: "Réglementation aérienne",
-    question: "La limite supérieure de la plupart des TMA est :",
+    group: "Réglementation",
+    question: "En classe C, les vols VFR :",
     options: [
-      "FL095",
-      "FL195",
-      "FL245",
-      "FL350"
+      "Reçoivent des informations de trafic",
+      "Reçoivent une clearance uniquement",
+      "Reçoivent une clearance et des informations de trafic",
+      "Volent sans contact radio"
     ],
-    correctAnswer: 1
+    correctAnswer: 2,
+    explanation: "En classe C, le VFR reçoit une clearance et des informations de trafic. Source : OACI Annexe 11."
   },
   {
-    id: 89,
+    id: 56,
     day: 14,
     group: "Cartes aéronautiques",
-    question: "La hauteur d'un relief est indiqué sur une carte par :",
+    question: "La hauteur d'un relief est indiquée sur une carte par :",
     options: [
-      "Un point noir suivie de la hauteur",
+      "Un point noir suivi de la hauteur",
       "Un listing en bas de carte",
-      "Par des carrés rouges",
-      "Par des flèches jaunes"
+      "Des carrés rouges",
+      "Des flèches jaunes"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "Ces points indiquent les altitudes maximales du relief local. Source : Légende VAC – SIA France."
   },
 
+  // ========================================
   // JOUR 15
+  // ========================================
   {
-    id: 15,
+    id: 57,
     day: 15,
     group: "Navigation aérienne",
     question: "Un plan de vol VFR doit inclure :",
@@ -769,36 +860,39 @@ export const questions = [
       "Le nom du contrôleur",
       "Le type de balises uniquement"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "Le plan de vol décrit la route, l'altitude, la vitesse et les prévisions de temps de vol. Source : SERA.4001."
   },
   {
-    id: 40,
+    id: 58,
     day: 15,
     group: "Contrôle aérien",
-    question: "Quelle phrase utilise-t-on pour signaler une panne radio ?",
+    question: "Que signifie ATIS ?",
     options: [
-      "\"Radio failure\"",
-      "\"Comms down\"",
-      "\"Signal lost\"",
-      "Aucune"
+      "Automatic Terminal Information Service",
+      "Air Traffic Information System",
+      "Airport Traffic Information Service",
+      "Aeronautical Terminal Instruction System"
     ],
-    correctAnswer: 3
+    correctAnswer: 0,
+    explanation: "ATIS diffuse les informations d'aérodrome (météo, piste en service, etc.). Source : OACI Annexe 11."
   },
   {
-    id: 65,
+    id: 59,
     day: 15,
-    group: "Réglementation aérienne",
-    question: "L'unité de hauteur utilisée en aviation est :",
+    group: "Réglementation",
+    question: "En classe E, les vols VFR sont :",
     options: [
-      "Le mètre",
-      "Le pied",
-      "Le mile",
-      "Le yard"
+      "Séparés des IFR",
+      "Reçoivent uniquement des informations de trafic si possible",
+      "Guidés en permanence",
+      "Interdits"
     ],
-    correctAnswer: 1
+    correctAnswer: 1,
+    explanation: "En classe E, le VFR reçoit des informations de trafic dans la mesure du possible. Source : OACI Annexe 11."
   },
   {
-    id: 90,
+    id: 60,
     day: 15,
     group: "Cartes aéronautiques",
     question: "Les fréquences ATIS et TWR figurent sur :",
@@ -808,12 +902,15 @@ export const questions = [
       "Le METAR",
       "Le plan de vol"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "Chaque fiche VAC indique les fréquences de communication officielles. Source : AIP France AD 2."
   },
 
+  // ========================================
   // JOUR 16
+  // ========================================
   {
-    id: 16,
+    id: 61,
     day: 16,
     group: "Navigation aérienne",
     question: "Sur une carte, 1 cm représente 2 NM. Si la distance entre deux points est de 7,5 cm, la distance réelle est :",
@@ -823,51 +920,57 @@ export const questions = [
       "15 NM",
       "20 NM"
     ],
-    correctAnswer: 2
+    correctAnswer: 2,
+    explanation: "7,5 cm × 2 NM/cm = 15 NM. Source : OACI Annexe 4."
   },
   {
-    id: 41,
+    id: 62,
     day: 16,
     group: "Contrôle aérien",
-    question: "Le contrôle d'approche (APP) gère :",
+    question: "Le QNE correspond à :",
     options: [
-      "Les roulages au sol",
-      "Les aéronef au sein de sa TMA",
-      "Les vols en croisière",
-      "Les vols IFR uniquement"
+      "Pression au niveau de la mer",
+      "Pression calée sur 1013 hPa",
+      "Pression aérodrome",
+      "Altitude vraie"
     ],
-    correctAnswer: 1
+    correctAnswer: 1,
+    explanation: "QNE est utilisé pour les niveaux de vol (FL). Source : OACI Annexe 5."
   },
   {
-    id: 66,
+    id: 63,
     day: 16,
-    group: "Réglementation aérienne",
-    question: "Une NOTAM informe sur :",
+    group: "Réglementation",
+    question: "En classe F, les vols VFR :",
     options: [
-      "Les conditions météo",
-      "Les restrictions temporaires de vol",
-      "Le trafic aérien",
-      "Les vols IFR"
+      "Reçoivent une clearance",
+      "Reçoivent des informations de trafic si possible",
+      "Sont interdits",
+      "Doivent déposer un plan de vol"
     ],
-    correctAnswer: 1
+    correctAnswer: 1,
+    explanation: "En classe F (non contrôlée), le service de trafic fournit des informations si possible. Source : OACI Annexe 11."
   },
   {
-    id: 91,
+    id: 64,
     day: 16,
     group: "Cartes aéronautiques",
-    question: "Sur une carte d'approche a vue, les itinéraires hélicoptère sont :",
+    question: "Sur une carte d'approche à vue, les itinéraires hélicoptère sont :",
     options: [
-      "Indiquer en noir",
-      "Indiquer en Vert",
-      "En pointiller",
-      "Pas indiquer"
+      "Indiqués en noir",
+      "Indiqués en vert",
+      "En pointillé",
+      "Non indiqués"
     ],
-    correctAnswer: 1
+    correctAnswer: 1,
+    explanation: "Les itinéraires hélicoptères sont tracés en vert selon les conventions OACI. Source : AIP France AD 2."
   },
 
+  // ========================================
   // JOUR 17
+  // ========================================
   {
-    id: 17,
+    id: 65,
     day: 17,
     group: "Navigation aérienne",
     question: "Le QDR d'un NDB correspond à :",
@@ -877,51 +980,58 @@ export const questions = [
       "Le cap magnétique",
       "L'azimut vrai"
     ],
-    correctAnswer: 1
+    correctAnswer: 1,
+    explanation: "Le QDR indique la direction de l'aéronef vue depuis la station. Source : OACI Doc 9432."
   },
   {
-    id: 42,
+    id: 66,
     day: 17,
     group: "Contrôle aérien",
-    question: "Dans un espace aérien de classe D, quelles sont les règles principales ?",
+    question: "Le QFE correspond à :",
     options: [
-      "Le contrôle assure la séparation entre IFR/IFR et VFR/VFR spécial, le contact radio et obligatoire",
-      "Seuls les vols IFR sont autorisés",
-      "Le contrôle assure la séparation entre IFR/VFR, le contact radio et obligatoire",
-      "Le contrôle assure la séparation entre tous les aéronefs, seul les IFR doivent être en contact radio"
+      "Pression au niveau de la mer",
+      "Pression à l'altitude de l'aérodrome",
+      "Pression standard",
+      "Température au sol"
     ],
-    correctAnswer: 0
+    correctAnswer: 1,
+    explanation: "QFE donne l'altitude 0 au seuil de piste. Source : OACI Annexe 5."
   },
   {
     id: 67,
     day: 17,
-    group: "Réglementation aérienne",
-    question: "Un AIP contient :",
+    group: "Réglementation",
+    question: "En classe G, les vols VFR :",
     options: [
-      "Les informations aéronautiques officielles",
-      "Des annonces temporaires",
-      "Les NOTAM",
-      "Les METAR uniquement"
+      "Sont séparés de tous les trafics",
+      "Reçoivent uniquement des informations de trafic si possible",
+      "Reçoivent une clearance",
+      "Sont interdits"
     ],
-    correctAnswer: 0
+    correctAnswer: 1,
+    explanation: "En classe G (non contrôlée), les informations de trafic sont fournies dans la mesure du possible. Source : OACI Annexe 11."
   },
   {
-    id: 92,
+    id: 68,
     day: 17,
     group: "Cartes aéronautiques",
-    question: "Dans la carte VAC donner en pièce jointe, que faire si je suis en panne radio sur la piste avant le décollage :",
+    image: "Q92.png",
+    question: "Sur la carte VAC de LFMT, que faire en cas de panne radio avant le décollage ?",
     options: [
-      "Je décolle et bas de ailes",
-      "Je décolle et sors de la CTR en suivant l'axe de piste",
-      "Je dégage la piste par la première sortie et j'attend le véhicule \"Follow Me\"",
-      "Je reste sur la piste et attend qu'on vienne me chercher"
+      "Décoller et battre des ailes",
+      "Décoller et quitter la CTR",
+      "Dégager la piste par la première sortie et attendre le véhicule \"Follow Me\"",
+      "Rester sur la piste et attendre"
     ],
-    correctAnswer: 2
+    correctAnswer: 2,
+    explanation: "Procédure indiquée sur la VAC : dégager la piste et attendre l'assistance. Source : AIP France AD 2 LFMT TXT 05."
   },
 
+  // ========================================
   // JOUR 18
+  // ========================================
   {
-    id: 18,
+    id: 69,
     day: 18,
     group: "Navigation aérienne",
     question: "Le GPS donne directement :",
@@ -931,51 +1041,57 @@ export const questions = [
       "La vitesse indiquée",
       "La route compas"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "Le GPS fournit la position géographique et la route vraie entre deux points. Source : OACI Doc 9613."
   },
   {
-    id: 43,
+    id: 70,
     day: 18,
     group: "Contrôle aérien",
-    question: "Dans un espace G, le pilote :",
+    question: "Un NOTAM informe sur :",
     options: [
-      "Doit contacter le contrôle",
-      "Est responsable de sa propre séparation",
-      "Ne peut pas voler",
-      "Est sous contrôle radar"
+      "Les modifications temporaires des installations aéronautiques",
+      "La météo uniquement",
+      "Les plans de vol",
+      "Les horaires des aérodromes"
     ],
-    correctAnswer: 1
+    correctAnswer: 0,
+    explanation: "NOTAM = Notice To Airmen, diffuse les changements opérationnels. Source : OACI Annexe 15."
   },
   {
-    id: 68,
+    id: 71,
     day: 18,
-    group: "Réglementation aérienne",
-    question: "Le METAR fournit :",
+    group: "Réglementation",
+    question: "La CTR (Control Zone) est :",
     options: [
-      "Les prévisions météo",
-      "Les observations météo récentes",
-      "Les bulletins NOTAM",
-      "Les vents prévus"
+      "Un espace contrôlé autour d'un aérodrome",
+      "Une zone militaire",
+      "Un espace non contrôlé",
+      "Une zone d'entraînement"
     ],
-    correctAnswer: 1
+    correctAnswer: 0,
+    explanation: "La CTR protège le trafic aux abords d'un aérodrome contrôlé. Source : OACI Annexe 11."
   },
   {
-    id: 93,
+    id: 72,
     day: 18,
     group: "Cartes aéronautiques",
-    question: "Un aérodrome non contrôlé est identifié par :",
+    question: "Un aérodrome fermé est identifié par :",
     options: [
       "Un cercle noir avec une croix",
       "Un carré bleu",
       "Un point rouge",
       "Un triangle"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "Symbole d'un terrain désaffecté. Source : Légende carte OACI France."
   },
 
+  // ========================================
   // JOUR 19
+  // ========================================
   {
-    id: 19,
+    id: 73,
     day: 19,
     group: "Navigation aérienne",
     question: "Le \"Track\" affiché sur le GPS représente :",
@@ -985,36 +1101,39 @@ export const questions = [
       "Le vent",
       "La direction du compas"
     ],
-    correctAnswer: 1
+    correctAnswer: 1,
+    explanation: "Le \"track\" tient compte du vent et montre la trajectoire sol. Source : OACI Doc 9613."
   },
   {
-    id: 44,
+    id: 74,
     day: 19,
     group: "Contrôle aérien",
-    question: "Le message \"Say again\" signifie :",
+    question: "La séparation verticale minimale entre deux aéronefs en route est :",
     options: [
-      "Répétez votre dernier message",
-      "Attendez",
-      "Confirmez",
-      "Correction"
+      "500 ft",
+      "1000 ft",
+      "2000 ft",
+      "3000 ft"
     ],
-    correctAnswer: 0
+    correctAnswer: 1,
+    explanation: "1000 ft est la séparation verticale standard en dessous du FL290. Source : OACI Doc 4444."
   },
   {
-    id: 69,
+    id: 75,
     day: 19,
-    group: "Réglementation aérienne",
-    question: "Un TAF donne :",
+    group: "Réglementation",
+    question: "La TMA (Terminal Control Area) est :",
     options: [
-      "Une observation",
-      "Une prévision météo",
-      "Un rapport radar",
-      "Un message de détresse"
+      "Un espace contrôlé établi autour des grands aérodromes",
+      "Une zone militaire",
+      "Un espace non contrôlé",
+      "Une zone d'attente"
     ],
-    correctAnswer: 1
+    correctAnswer: 0,
+    explanation: "La TMA entoure un ou plusieurs aérodromes importants. Source : OACI Annexe 11."
   },
   {
-    id: 94,
+    id: 76,
     day: 19,
     group: "Cartes aéronautiques",
     question: "L'altitude du terrain (élévation) figure :",
@@ -1024,12 +1143,15 @@ export const questions = [
       "En FL",
       "En hPa"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "Elle est indiquée en haut de chaque fiche VAC, en pieds AMSL. Source : AIP France AD 2."
   },
 
+  // ========================================
   // JOUR 20
+  // ========================================
   {
-    id: 20,
+    id: 77,
     day: 20,
     group: "Navigation aérienne",
     question: "Quelle erreur est fréquente lors de la navigation à l'estime ?",
@@ -1039,36 +1161,39 @@ export const questions = [
       "Lire la mauvaise échelle",
       "Oublier la vitesse vraie"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "La dérive due au vent est la principale source d'erreur de trajectoire. Source : DGAC – Manuel de navigation."
   },
   {
-    id: 45,
+    id: 78,
     day: 20,
     group: "Contrôle aérien",
-    question: "\"Negative\" signifie :",
+    question: "Une instruction \"Hold short\" signifie :",
     options: [
-      "Oui",
-      "Non",
-      "Je ne sais pas",
-      "Possible"
+      "Arrêtez-vous avant la piste",
+      "Décollez immédiatement",
+      "Roulez lentement",
+      "Dégagez la piste"
     ],
-    correctAnswer: 1
+    correctAnswer: 0,
+    explanation: "\"Hold short\" demande de rester en deçà d'un point spécifié (souvent le seuil de piste). Source : OACI Doc 4444."
   },
   {
-    id: 70,
+    id: 79,
     day: 20,
-    group: "Réglementation aérienne",
-    question: "Le QNH permet d'obtenir :",
+    group: "Réglementation",
+    question: "La différence entre AMSL et AGL est :",
     options: [
-      "L'altitude au-dessus du niveau moyen de la mer",
-      "La hauteur sol",
-      "Le FL",
-      "L'altitude vraie"
+      "AMSL = altitude par rapport au niveau de la mer, AGL = hauteur par rapport au sol",
+      "AMSL = hauteur, AGL = altitude",
+      "Elles sont identiques",
+      "AMSL est utilisé en IFR uniquement"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "AMSL (Above Mean Sea Level) et AGL (Above Ground Level) définissent des références d'altitude différentes. Source : OACI Annexe 5."
   },
   {
-    id: 95,
+    id: 80,
     day: 20,
     group: "Cartes aéronautiques",
     question: "Les obstacles supérieurs à 100 m sont représentés :",
@@ -1078,12 +1203,15 @@ export const questions = [
       "Par un rond",
       "Par une flèche"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "Ces symboles représentent les antennes, tours ou bâtiments élevés. Source : Légende carte OACI."
   },
 
+  // ========================================
   // JOUR 21
+  // ========================================
   {
-    id: 21,
+    id: 81,
     day: 21,
     group: "Navigation aérienne",
     question: "La ligne isogone sur une carte indique :",
@@ -1093,36 +1221,39 @@ export const questions = [
       "La déclinaison magnétique constante",
       "La variation du relief"
     ],
-    correctAnswer: 2
+    correctAnswer: 2,
+    explanation: "Une isogone relie les points de même déclinaison magnétique. Source : OACI Annexe 4."
   },
   {
-    id: 46,
+    id: 82,
     day: 21,
     group: "Contrôle aérien",
-    question: "Quelle est la signification de \"Wilco\" ?",
+    question: "\"Line up and wait\" signifie :",
     options: [
-      "Je ne peux pas",
-      "Bien reçu et je vais exécuter",
-      "J'annule la clairance",
-      "Je répète"
+      "Alignez-vous sur la piste et attendez l'autorisation de décoller",
+      "Roulez jusqu'à la piste",
+      "Décollez immédiatement",
+      "Dégagez la piste"
     ],
-    correctAnswer: 1
+    correctAnswer: 0,
+    explanation: "Cette instruction demande de s'aligner sur la piste mais d'attendre le feu vert pour décoller. Source : OACI Doc 4444."
   },
   {
-    id: 71,
+    id: 83,
     day: 21,
-    group: "Réglementation aérienne",
-    question: "Le QFE permet d'obtenir :",
+    group: "Réglementation",
+    question: "Un niveau de vol (FL) est basé sur :",
     options: [
-      "La hauteur par rapport à la piste",
-      "L'altitude moyenne",
-      "L'altitude pression",
-      "Le niveau de vol"
+      "La pression standard 1013 hPa",
+      "La pression QNH",
+      "La pression QFE",
+      "L'altitude vraie"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "Les FL utilisent le calage altimétrique standard de 1013,25 hPa. Source : OACI Annexe 5."
   },
   {
-    id: 96,
+    id: 84,
     day: 21,
     group: "Cartes aéronautiques",
     question: "Les zones militaires actives sont :",
@@ -1132,12 +1263,15 @@ export const questions = [
       "Publiées sur VAC",
       "Non publiées"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "Leur activation est temporaire et communiquée par NOTAM. Source : AIP France ENR 5.1."
   },
 
+  // ========================================
   // JOUR 22
+  // ========================================
   {
-    id: 22,
+    id: 85,
     day: 22,
     group: "Navigation aérienne",
     question: "Le calcul du temps de vol se fait à partir de :",
@@ -1147,51 +1281,57 @@ export const questions = [
       "La vitesse sol",
       "La vitesse de croisière prévue"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "Le temps de vol estimé découle de la vitesse vraie corrigée du vent. Source : DGAC – Manuel du pilote privé."
   },
   {
-    id: 47,
+    id: 86,
     day: 22,
     group: "Contrôle aérien",
-    question: "\"Unable\" veut dire :",
+    question: "\"Vacate runway\" signifie :",
     options: [
-      "Impossible à exécuter",
-      "Compris",
-      "Reçu",
-      "Négatif"
+      "Dégagez la piste",
+      "Arrêtez-vous sur la piste",
+      "Alignez-vous",
+      "Roulez lentement"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "Instruction de libérer la piste dès que possible. Source : OACI Doc 4444."
   },
   {
-    id: 72,
+    id: 87,
     day: 22,
-    group: "Réglementation aérienne",
-    question: "La limite de vitesse sous 10 000 ft est :",
+    group: "Réglementation",
+    question: "L'altitude de transition est :",
     options: [
-      "350 kt",
-      "250 kt",
-      "200 kt",
-      "300 kt"
+      "L'altitude à partir de laquelle on utilise le FL",
+      "L'altitude minimale de survol",
+      "La hauteur de décision",
+      "L'altitude maximale VFR"
     ],
-    correctAnswer: 1
+    correctAnswer: 0,
+    explanation: "Au-dessus de l'altitude de transition, les altitudes sont exprimées en niveaux de vol (FL). Source : OACI Annexe 2."
   },
   {
-    id: 97,
+    id: 88,
     day: 22,
     group: "Cartes aéronautiques",
-    question: "Les routes VFR recommandées sont souvent tracées en :",
+    question: "Les routes VFR obligatoires avec contact radio sont tracées en :",
     options: [
-      "Mauve",
-      "Vert",
-      "Bleu",
-      "Rouge"
+      "Ligne noire pleine (____)",
+      "Ligne de points (.....)",
+      "Ligne de tirets (– – – –)",
+      "En rouge"
     ],
-    correctAnswer: 1
+    correctAnswer: 2,
+    explanation: "Sur les cartes OACI, les routes VFR obligatoires avec contact radio sont tracées par une ligne de tirets noirs. Source : Légende carte OACI France."
   },
 
+  // ========================================
   // JOUR 23
+  // ========================================
   {
-    id: 23,
+    id: 89,
     day: 23,
     group: "Navigation aérienne",
     question: "Une erreur de 5° sur le cap après 60 NM entraîne une déviation latérale d'environ :",
@@ -1201,51 +1341,57 @@ export const questions = [
       "8 NM",
       "10 NM"
     ],
-    correctAnswer: 1
+    correctAnswer: 1,
+    explanation: "Règle pratique : déviation ≈ distance × erreur (en NM × sin 5° ≈ 0,087 × 60 ≈ 5). Source : DGAC – Navigation pratique."
   },
   {
-    id: 48,
+    id: 90,
     day: 23,
     group: "Contrôle aérien",
-    question: "Le mot \"Standby\" signifie :",
+    question: "Un service d'information de vol (FIS) fournit :",
     options: [
-      "Répétez",
-      "Attendez",
-      "D'accord",
-      "Je ne comprends pas"
+      "Des informations météo, trafic et NOTAM",
+      "Des clearances",
+      "Des séparations",
+      "Des autorisations de décollage"
     ],
-    correctAnswer: 1
+    correctAnswer: 0,
+    explanation: "FIS donne des informations utiles au vol mais n'émet pas de clearances. Source : OACI Annexe 11."
   },
   {
-    id: 73,
+    id: 91,
     day: 23,
-    group: "Réglementation aérienne",
-    question: "En VFR, le niveau de croisière est choisi :",
+    group: "Réglementation",
+    question: "Le niveau de transition est :",
     options: [
-      "Selon la route vraie",
-      "Selon le vent",
-      "Selon la route magnétique",
-      "Selon l'altitude du terrain"
+      "Le niveau de vol le plus bas utilisable au-dessus de l'altitude de transition",
+      "Le FL minimum",
+      "Le FL maximum",
+      "L'altitude de croisière"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "C'est le FL le plus bas disponible après l'altitude de transition. Source : OACI Annexe 2."
   },
   {
-    id: 98,
+    id: 92,
     day: 23,
     group: "Cartes aéronautiques",
     question: "Les points de report VFR sont identifiés par :",
     options: [
-      "Des lettres sur fond noir",
+      "Une lettre dans un cercle à fond blanc et contour noir",
       "Des chiffres",
       "Des symboles météo",
       "Des fréquences"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "Ces points géographiques servent aux reports radio des pilotes VFR. Source : AIP France AD 2."
   },
 
+  // ========================================
   // JOUR 24
+  // ========================================
   {
-    id: 24,
+    id: 93,
     day: 24,
     group: "Navigation aérienne",
     question: "En navigation, \"GS\" signifie :",
@@ -1255,36 +1401,39 @@ export const questions = [
       "General Service",
       "Ground Signal"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "C'est la vitesse sol réelle de l'aéronef. Source : OACI Annexe 5."
   },
   {
-    id: 49,
+    id: 94,
     day: 24,
     group: "Contrôle aérien",
-    question: "Un \"holding pattern\" est :",
+    question: "Le service d'alerte (ALRS) est activé en cas de :",
     options: [
-      "Une procédure d'attente en vol",
-      "Une procédure de décollage",
-      "Une manœuvre d'évitement",
-      "Une navigation GPS"
+      "Incertitude, alerte ou détresse",
+      "Panne radio uniquement",
+      "Mauvais temps",
+      "Retard de vol"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "ALRS coordonne les opérations de recherche et sauvetage (SAR). Source : OACI Annexe 11."
   },
   {
-    id: 74,
+    id: 95,
     day: 24,
-    group: "Réglementation aérienne",
-    question: "En France, la phraséologie se fait principalement en :",
+    group: "Réglementation",
+    question: "La couche de transition est :",
     options: [
-      "Anglais et français",
-      "Français uniquement",
-      "Anglais uniquement",
-      "Langue locale"
+      "L'espace entre l'altitude et le niveau de transition",
+      "Une zone militaire",
+      "Un espace non contrôlé",
+      "Une zone d'attente"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "C'est la zone où l'on passe du calage QNH au calage standard 1013 hPa. Source : OACI Annexe 2."
   },
   {
-    id: 99,
+    id: 96,
     day: 24,
     group: "Cartes aéronautiques",
     question: "Sur la carte OACI, \"LF-R\" suivi d'un numéro désigne :",
@@ -1294,12 +1443,15 @@ export const questions = [
       "Un aérodrome",
       "Un espace C"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "Code d'identification officiel des zones restreintes françaises. Source : AIP France ENR 5.1."
   },
 
+  // ========================================
   // JOUR 25
+  // ========================================
   {
-    id: 25,
+    id: 97,
     day: 25,
     group: "Navigation aérienne",
     question: "Quelle est la meilleure méthode pour corriger la dérive en vol VFR ?",
@@ -1309,33 +1461,36 @@ export const questions = [
       "Changer la vitesse",
       "Couper le moteur et recalculer"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "Une correction de quelques degrés permet de compenser le vent latéral. Source : DGAC – Manuel du pilote privé."
   },
   {
-    id: 50,
+    id: 98,
     day: 25,
     group: "Contrôle aérien",
-    question: "Le terme \"Cleared to land\" est donné par :",
+    question: "\"Mayday\" est utilisé pour :",
     options: [
-      "Le Sol",
-      "La Tour",
-      "L'APP",
-      "L'ATIS"
+      "Une situation de détresse",
+      "Une panne mineure",
+      "Une demande d'information",
+      "Un changement de fréquence"
     ],
-    correctAnswer: 1
+    correctAnswer: 0,
+    explanation: "\"Mayday\" signale une situation de détresse immédiate (danger grave et imminent). Source : OACI Annexe 10."
   },
   {
-    id: 75,
+    id: 99,
     day: 25,
-    group: "Réglementation aérienne",
-    question: "Le vol à vue (VFR) est interdit :",
+    group: "Réglementation",
+    question: "Un espace aérien FIR (Flight Information Region) fournit :",
     options: [
-      "Au-dessus du FL195",
-      "Au-dessus du FL245",
-      "En dessous du FL50",
-      "Dans les CTR"
+      "Des services d'information de vol et d'alerte",
+      "Des clearances uniquement",
+      "Des séparations radar",
+      "Des autorisations de décollage"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "La FIR couvre une région où sont assurés les services d'information de vol et d'alerte. Source : OACI Annexe 11."
   },
   {
     id: 100,
@@ -1345,9 +1500,10 @@ export const questions = [
     options: [
       "Degrés, minutes et secondes",
       "Radians",
-      "Miles et NM",
+      "Milles nautiques",
       "Coordonnées GPS en mètres"
     ],
-    correctAnswer: 0
+    correctAnswer: 0,
+    explanation: "Format géographique normalisé OACI pour toutes les cartes aéronautiques. Source : OACI Annexe 4."
   }
 ];
