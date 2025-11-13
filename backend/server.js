@@ -284,7 +284,7 @@ async function sendMorningAnnouncement() {
     `🎁 **4 nouvelles questions** sont maintenant disponibles !\n\n` +
     `⏰ Vous avez jusqu'à **23h00** pour répondre !\n\n` +
     `🏆 Les résultats seront annoncés ce soir à **23h** !\n\n` +
-    `🔗 Rendez-vous sur le site : **https://calendrier-avent-jtff.netlify.app**`;
+    `🔗 Rendez-vous sur le site : **https://calendrier-de-l-avant-jtff.netlify.app**`;
   
   await sendDiscordMessage(content);
 }
@@ -334,7 +334,6 @@ async function sendEveningResults() {
     const correctOption = question.options[question.correctAnswer];
     
     answersText += `**Question ${index + 1}** - ${qStat.question}\n`;
-    answersText += `|| ${qStat.explanation}||\n`;
     answersText += `📈 Taux de réussite : **${qStat.successRate}%** (${qStat.correctAnswersCount}/${qStat.totalAnswers})\n\n`;
   });
   
@@ -346,7 +345,7 @@ async function sendEveningResults() {
     statsText +
     answersText +
     `\n🎁 Rendez-vous demain à **8h** pour 4 nouvelles questions !\n\n` +
-    `🔗 Site : **https://calendrier-avent-jtff.netlify.app**`;
+    `🔗 Site : **https://calendrier-de-l-avant-jtff.netlify.app**`;
   
   await sendDiscordMessage(content);
 }
