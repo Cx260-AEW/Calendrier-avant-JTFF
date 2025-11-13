@@ -282,8 +282,7 @@ async function sendMorningAnnouncement() {
   const content = `🎄 **CALENDRIER DE L'AVENT - JOUR ${currentDay}/25** 🎄\n\n` +
     `☀️ Bonjour à tous !\n\n` +
     `🎁 **4 nouvelles questions** sont maintenant disponibles !\n\n` +
-    `📚 **Thèmes du jour** :\n${themes}\n\n` +
-    `⏰ Vous avez jusqu'à **23h30** pour répondre !\n\n` +
+    `⏰ Vous avez jusqu'à **23h00** pour répondre !\n\n` +
     `🏆 Les résultats seront annoncés ce soir à **23h** !\n\n` +
     `🔗 Rendez-vous sur le site : **https://calendrier-avent-jtff.netlify.app**`;
   
@@ -336,7 +335,7 @@ async function sendEveningResults() {
     
     answersText += `**Question ${index + 1}** - ${qStat.question}\n`;
     answersText += `||✅ **Réponse : ${correctLetter}** - ${correctOption}||\n`;
-    answersText += `||📚 ${qStat.explanation}||\n`;
+    answersText += `|| ${qStat.explanation}||\n`;
     answersText += `📈 Taux de réussite : **${qStat.successRate}%** (${qStat.correctAnswersCount}/${qStat.totalAnswers})\n\n`;
   });
   
