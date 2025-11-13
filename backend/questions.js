@@ -160,13 +160,13 @@ export const questions = [
     group: "📜Réglementation",
     question: "En classe D, un vol VFR doit :",
     options: [
-      "Recevoir une clearance et des informations de trafic",
+      "Avoir un contact radio et recevoir une clearance",
       "Voler en IFR uniquement",
       "Avoir un plan de vol déposé",
       "Être guidé en permanence"
     ],
     correctAnswer: 0,
-    explanation: "💬En classe D, le VFR reçoit une autorisation (clearance) et des informations de trafic. \n 📚Source : SERA.6001."
+    explanation: "💬En classe D, le VFR reçoit une autorisation (clearance) et être en contact radio permanent. \n 📚Source : SERA.6001."
   },
   {
     id: 12,
@@ -218,7 +218,7 @@ export const questions = [
     id: 15,
     day: 4,
     group: "📜Réglementation",
-    question: "En France il est recommandé de deposer un plan de vol VFR :",
+    question: "En France il est recommandé de déposer un plan de vol VFR :",
     options: [
       "Uniquement pour les vols internationaux",
       "Pour tout vol dépassant 30 km",
@@ -555,7 +555,7 @@ export const questions = [
     group: "🧭Navigation aérienne",
     question: "En vol VFR, la navigation à l'estime consiste à :",
     options: [
-      "Suivre un cap sans repère visuel",
+      "Suivre un cap avec repère visuel",
       "Naviguer uniquement aux instruments",
       "Utiliser le GPS",
       "Lire la carte uniquement"
@@ -1051,10 +1051,10 @@ export const questions = [
     group: "🎧Contrôle aérien",
     question: "Un NOTAM informe sur :",
     options: [
-      "Les modifications temporaires des installations aéronautiques",
+      "Les modifications temporaires sur un terain ou un espace aerien",
       "La météo uniquement",
-      "Les plans de vol",
-      "Les horaires des aérodromes"
+      "Les plans de vol uniquement",
+      "Les horaires des compagnies aériennes"
     ],
     correctAnswer: 0,
     explanation: "💬NOTAM = Notice To Airmen, diffuse les changements opérationnels. \n 📚Source : OACI Annexe 15."
@@ -1098,7 +1098,7 @@ export const questions = [
     question: "Le \"Track\" affiché sur le GPS représente :",
     options: [
       "Le cap suivi",
-      "La route réellement parcourue au sol",
+      "La route",
       "Le vent",
       "La direction du compas"
     ],
@@ -1109,15 +1109,15 @@ export const questions = [
     id: 74,
     day: 19,
     group: "🎧Contrôle aérien",
-    question: "La séparation verticale minimale entre deux aéronefs en route est :",
+    question: "La séparation verticale minimale entre deux aéronefs en espace CVSM au dessus du FL290:",
     options: [
       "500 ft",
       "1000 ft",
       "2000 ft",
       "3000 ft"
     ],
-    correctAnswer: 1,
-    explanation: "💬1000 ft est la séparation verticale standard en dessous du FL290. \n 📚Source : OACI Doc 4444."
+    correctAnswer: 2,
+    explanation: "💬Dans un espace CVSM la séparation verticale entre deux aéronefs est de :1000 ft en dessous du FL290 et 2000 ft au dessus du FL290.\n 📚Source : OACI Doc 4444."
   },
   {
     id: 75,
@@ -1155,15 +1155,15 @@ export const questions = [
     id: 77,
     day: 20,
     group: "🧭Navigation aérienne",
-    question: "Quelle erreur est fréquente lors de la navigation à l'estime ?",
+    question: "Quel est le principe fondamental de la navigation à vue (VFR) ?",
     options: [
-      "Ne pas corriger la dérive",
-      "Utiliser le GPS",
-      "Lire la mauvaise échelle",
-      "Oublier la vitesse vraie"
+      "Suivre uniquement les indications des instruments de bord",
+      "Voler en suivant les routes aériennes",
+      "Se repérer grâce aux repères visuels au sol et à la carte aéronautique",
+      "Naviguer en utilisant exclusivement le GPS"
     ],
     correctAnswer: 0,
-    explanation: "💬La dérive due au vent est la principale \n 📚Source d'erreur de trajectoire. \n 📚Source : DGAC – Manuel de navigation."
+    explanation: "💬La navigation à vue (VFR) repose sur l’observation directe du terrain : le pilote identifie des repères visuels (routes, rivières, villages, reliefs, etc.) et les confronte à la carte aéronautique pour suivre sa route. \n 📚Source : OACI – Annexe 2, Règles de l’air & Manuel de pilotage VFR"
   },
   {
     id: 78,
@@ -1257,12 +1257,12 @@ export const questions = [
     id: 84,
     day: 21,
     group: "🗺️ Cartes aéronautiques",
-    question: "Les zones militaires actives sont :",
+    question: "Les zones militaires actives peuvent être  :",
     options: [
-      "Publiées par NOTAM",
-      "Publiées sur la carte IFR",
-      "Publiées sur VAC",
-      "Non publiées"
+      "Consultées par NOTAM",
+      "Consultées sur la carte IFR",
+      "Consultées sur VAC",
+      "Consultée au bar du club"
     ],
     correctAnswer: 0,
     explanation: "💬Leur activation est temporaire et communiquée par NOTAM. \n 📚Source : AIP France ENR 5.1."
@@ -1283,7 +1283,7 @@ export const questions = [
       "Distance / La vitesse de croisière moyenne"
     ],
     correctAnswer: 2,
-    explanation: "💬Le temps de vol estimé découle de la vitesse sol . \n 📚Source : DGAC – Manuel du pilote privé."
+    explanation: "💬Le temps de vol estimé découle de la vitesse sol. \n 📚Source : DGAC – Manuel du pilote privé."
   },
   {
     id: 86,
@@ -1366,8 +1366,8 @@ export const questions = [
     question: "Le niveau de transition est :",
     options: [
       "Le niveau de vol le plus bas utilisable au-dessus de l'altitude de transition",
-      "Le FL minimum",
       "Le FL maximum",
+      "Le FL moyen",
       "L'altitude de croisière"
     ],
     correctAnswer: 0,
