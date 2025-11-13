@@ -334,7 +334,6 @@ async function sendEveningResults() {
     const correctOption = question.options[question.correctAnswer];
     
     answersText += `**Question ${index + 1}** - ${qStat.question}\n`;
-    answersText += `||✅ **Réponse : ${correctLetter}** - ${correctOption}||\n`;
     answersText += `|| ${qStat.explanation}||\n`;
     answersText += `📈 Taux de réussite : **${qStat.successRate}%** (${qStat.correctAnswersCount}/${qStat.totalAnswers})\n\n`;
   });
