@@ -1342,6 +1342,152 @@ function AdminPage() {
             </p>
           </div>
 
+          {/* Backup & Restore */}
+          <div style={{ marginTop: '48px', paddingTop: '40px', borderTop: '2px solid #3b82f6' }}>
+            <h3 style={{ 
+              fontSize: '24px', 
+              marginBottom: '8px', 
+              color: '#3b82f6',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px'
+            }}>
+              💾 Backup & Restore
+            </h3>
+            <p style={{ 
+              fontSize: '14px', 
+              color: '#1e40af', 
+              marginBottom: '24px',
+              fontStyle: 'italic'
+            }}>
+              Sauvegardez et restaurez vos données régulièrement. ⚠️ Sur Railway, les données peuvent être perdues au redémarrage !
+            </p>
+            
+            <div style={{ display: 'grid', gap: '16px' }}>
+              {/* Télécharger backup */}
+              <div style={{
+                padding: '20px',
+                background: '#eff6ff',
+                borderRadius: '12px',
+                border: '2px solid #3b82f6'
+              }}>
+                <h4 style={{ fontSize: '18px', marginBottom: '12px', color: '#1e40af' }}>
+                  📥 Télécharger un backup
+                </h4>
+                <p style={{ fontSize: '14px', color: '#374151', marginBottom: '16px' }}>
+                  Télécharge un fichier JSON contenant tous les utilisateurs et leurs réponses.
+                </p>
+                <button
+                  onClick={async () => {
+                    try {
+                      const response = await fetch(`${API_URL}/api/admin/backup?password=${password}`);
+                      const data = await response.json();
+                      
+                      if (response.ok) {
+                        // Créer un fichier et le télécharger
+                        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+                        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `data-backup-${timestamp}.json`;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+                        
+                        setMessage(`✅ Backup téléchargé : ${data.users.length} users, ${data.answers.length} réponses`);
+                      } else {
+                        setMessage('❌ Erreur lors du backup');
+                      }
+                    } catch (error) {
+                      setMessage('❌ Erreur de connexion');
+                    }
+                    setTimeout(() => setMessage(''), 5000);
+                  }}
+                  style={{
+                    padding: '12px 24px',
+                    background: '#3b82f6',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                >
+                  📥 Télécharger le backup
+                </button>
+              </div>
+
+              {/* Restaurer backup */}
+              <div style={{
+                padding: '20px',
+                background: '#fef3c7',
+                borderRadius: '12px',
+                border: '2px solid #f59e0b'
+              }}>
+                <h4 style={{ fontSize: '18px', marginBottom: '12px', color: '#92400e' }}>
+                  📤 Restaurer un backup
+                </h4>
+                <p style={{ fontSize: '14px', color: '#374151', marginBottom: '16px' }}>
+                  ⚠️ Attention : ceci remplacera TOUTES les données actuelles par celles du backup !
+                </p>
+                <input
+                  type="file"
+                  accept=".json"
+                  onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    
+                    if (!window.confirm('⚠️ ATTENTION : Restaurer un backup remplacera TOUTES les données actuelles. Continuer ?')) {
+                      e.target.value = '';
+                      return;
+                    }
+                    
+                    try {
+                      const text = await file.text();
+                      const backupData = JSON.parse(text);
+                      
+                      const response = await fetch(`${API_URL}/api/admin/restore`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          password: password,
+                          data: backupData
+                        })
+                      });
+                      
+                      const result = await response.json();
+                      
+                      if (result.success) {
+                        setMessage(`✅ ${result.message}`);
+                        await loadStats();
+                        await loadUsers();
+                        await loadGlobalCategoryStats();
+                      } else {
+                        setMessage(`❌ ${result.error}`);
+                      }
+                    } catch (error) {
+                      setMessage('❌ Erreur : fichier invalide ou problème de connexion');
+                    }
+                    
+                    e.target.value = '';
+                    setTimeout(() => setMessage(''), 5000);
+                  }}
+                  style={{
+                    padding: '12px',
+                    border: '2px solid #f59e0b',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    width: '100%',
+                    cursor: 'pointer'
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
           {/* Gestion des données */}
           <div style={{ marginTop: '48px', paddingTop: '40px', borderTop: '3px solid #ef4444' }}>
             <h3 style={{ 
