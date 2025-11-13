@@ -1,12 +1,5 @@
 // ========================================
-// 🧪 MODE TEST - CONFIGURATION.
-// ========================================
-const TEST_MODE = true;           // ← Mettre à false pour la production
-const TEST_DAY = 25;               // ← Jour à simuler (1-25)
-const TEST_ALWAYS_OPEN = true;    // ← Toujours ouvert (ignorer horaires)
-// ========================================
-// Les crons 8h et 23h30 fonctionnent TOUJOURS (même en mode test)
-// pour vérifier que l'automatisation marche !
+// 🎄 CALENDRIER DE L'AVENT - AUTOMATISATION COMPLÈTE
 // ========================================
 
 import express from 'express';
@@ -23,10 +16,9 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Configuration
-const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1437838332930560112/3ys2Itxs5xq5eoLt1Rck8yXaONi7YFUoTRSpm5ARnQdmrRSY3m0l704Gci4w0AR2YRqO';
-const ADMIN_PASSWORD = 'ADMIN2025';
+// Fichiers de données
 const DATA_FILE = path.join(__dirname, 'data.json');
+const CONFIG_FILE = path.join(__dirname, 'config.json');
 
 // Middleware
 app.use(cors());
@@ -34,7 +26,27 @@ app.use(express.json());
 app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use('/api/images', express.static(path.join(__dirname, 'images'))); // Compatibilité
 
-// Initialiser le fichier de données
+// ========================================
+// 📋 CONFIGURATION PAR DÉFAUT
+// ========================================
+const DEFAULT_CONFIG = {
+  startDate: '2025-12-01',        // Date de début (1er décembre)
+  endDate: '2025-12-25',          // Date de fin (25 décembre)
+  morningHour: 8,                 // Heure du message du matin
+  morningMinute: 0,               // Minute du message du matin
+  eveningHour: 23,                // Heure du message du soir
+  eveningMinute: 0,               // Minute du message du soir
+  discordWebhook: 'https://discord.com/api/webhooks/1437838332930560112/3ys2Itxs5xq5eoLt1Rck8yXaONi7YFUoTRSpm5ARnQdmrRSY3m0l704Gci4w0AR2YRqO',
+  adminPassword: 'ADMIN2025',
+  openingHour: 8,                 // Heure d'ouverture quotidienne
+  closingHour: 23,                // Heure de fermeture quotidienne
+  closingMinute: 30               // Minute de fermeture (23h30)
+};
+
+// ========================================
+// 💾 GESTION DES FICHIERS
+// ========================================
+
 async function initDataFile() {
   try {
     await fs.access(DATA_FILE);
@@ -43,57 +55,98 @@ async function initDataFile() {
   }
 }
 
-// Lire les données
+async function initConfigFile() {
+  try {
+    await fs.access(CONFIG_FILE);
+  } catch {
+    await fs.writeFile(CONFIG_FILE, JSON.stringify(DEFAULT_CONFIG, null, 2));
+  }
+}
+
 async function readData() {
   const data = await fs.readFile(DATA_FILE, 'utf-8');
   return JSON.parse(data);
 }
 
-// Écrire les données
 async function writeData(data) {
   await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2));
 }
 
-// Obtenir le jour actuel (1-25)
-function getCurrentDay() {
-  // 🧪 MODE TEST
-  if (TEST_MODE) {
-    console.log(`🧪 MODE TEST ACTIVÉ : Jour ${TEST_DAY}`);
-    return TEST_DAY;
+async function readConfig() {
+  try {
+    const config = await fs.readFile(CONFIG_FILE, 'utf-8');
+    return JSON.parse(config);
+  } catch {
+    return DEFAULT_CONFIG;
   }
-  
-  // 📅 MODE PRODUCTION
-  const now = new Date();
-  const december1st = new Date(now.getFullYear(), 11, 1);
-  const dayOfMonth = now.getDate();
-  
-  if (now.getMonth() === 11 && dayOfMonth >= 1 && dayOfMonth <= 25) {
-    return dayOfMonth;
-  }
-  return 0;
 }
 
-// Vérifier si on est dans les heures d'ouverture (8h-23h30)
-function isOpenHours() {
-  // 🧪 MODE TEST
-  if (TEST_MODE && TEST_ALWAYS_OPEN) {
-    return true;
+async function writeConfig(config) {
+  await fs.writeFile(CONFIG_FILE, JSON.stringify(config, null, 2));
+}
+
+// ========================================
+// 📅 GESTION DU CALENDRIER
+// ========================================
+
+async function getCurrentDay() {
+  const config = await readConfig();
+  
+  // Normaliser les dates à 00:00:00 pour éviter les bugs d'heures
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  
+  const startDate = new Date(config.startDate);
+  startDate.setHours(0, 0, 0, 0);
+  
+  const endDate = new Date(config.endDate);
+  endDate.setHours(23, 59, 59, 999);
+  
+  // Vérifier si on est dans la période du calendrier
+  if (now < startDate) {
+    console.log('❌ Calendrier pas encore commencé');
+    return 0; // Pas encore commencé
   }
   
-  // ⏰ MODE PRODUCTION
+  if (now > endDate) {
+    console.log('❌ Calendrier terminé');
+    return 0; // Terminé
+  }
+  
+  // Calculer le nombre de jours écoulés depuis le début
+  const diffTime = now.getTime() - startDate.getTime();
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  
+  // Le jour actuel = nombre de jours écoulés + 1
+  const currentDay = diffDays + 1;
+  
+  // S'assurer que le jour est entre 1 et 25
+  const finalDay = Math.max(1, Math.min(currentDay, 25));
+  
+  console.log(`📅 Calcul du jour: Date=${now.toISOString().split('T')[0]}, Début=${startDate.toISOString().split('T')[0]}, Jours écoulés=${diffDays}, Jour=${finalDay}/25`);
+  
+  return finalDay;
+}
+
+async function isOpenHours() {
+  const config = await readConfig();
   const now = new Date();
   const hour = now.getHours();
   const minute = now.getMinutes();
   
-  if (hour > 8 || (hour === 8 && minute >= 0)) {
-    if (hour < 23 || (hour === 23 && minute < 30)) {
+  // Vérifier si on est dans les horaires d'ouverture
+  if (hour > config.openingHour || (hour === config.openingHour && minute >= 0)) {
+    if (hour < config.closingHour || (hour === config.closingHour && minute < config.closingMinute)) {
       return true;
     }
   }
   return false;
 }
 
-// Calculer le score d'un utilisateur
+// ========================================
+// 🎯 CALCUL DU SCORE
+// ========================================
+
 function calculateUserScore(username, data) {
   const userAnswers = data.answers.filter(a => a.username.toLowerCase() === username.toLowerCase());
   let score = 0;
@@ -108,219 +161,243 @@ function calculateUserScore(username, data) {
   return score;
 }
 
-// ====== FONCTIONS DISCORD ======
+// ========================================
+// 📊 CLASSEMENT
+// ========================================
 
-// 1. MESSAGE DU MATIN (8h) : Nouvelles questions disponibles
-async function sendMorningDiscordMessage() {
-  const currentDay = getCurrentDay();
+function getLeaderboard(data) {
+  const userScores = {};
   
-  if (currentDay === 0) {
-    console.log('❌ Pas en décembre, message du matin annulé');
-    return;
-  }
-
-  const todayQuestions = questions.filter(q => q.day === currentDay);
-  
-  const testPrefix = TEST_MODE ? '🧪 [MODE TEST] ' : '';
-  const message = `${testPrefix}# 🎄 Jour ${currentDay} - Nouvelles Questions ! 🎄
-
-**4 nouvelles questions sont disponibles :**
-
-🧭 **Navigation aérienne** - Question ${todayQuestions[0]?.id}
-🎧 **Contrôle aérien** - Question ${todayQuestions[1]?.id}
-📜 **Réglementation** - Question ${todayQuestions[2]?.id}
-🗺️ **Cartes aéronautiques** - Question ${todayQuestions[3]?.id}
-
-⏰ Vous avez jusqu'à **23h30** pour répondre !
-🎯 Bonne chance à tous ! ✈️`;
-
-  try {
-    const response = await fetch(DISCORD_WEBHOOK, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content: message })
-    });
-    
-    if (response.ok) {
-      console.log(`✅ [${new Date().toLocaleTimeString()}] Message du matin envoyé pour le jour ${currentDay}`);
-    } else {
-      console.error(`❌ Erreur Discord (status ${response.status}):`, await response.text());
-    }
-  } catch (error) {
-    console.error('❌ Erreur réseau Discord:', error.message);
-  }
-}
-
-// 2. MESSAGE DU SOIR (23h30) : Résultats de la journée
-async function sendEveningDiscordMessage() {
-  const data = await readData();
-  const currentDay = getCurrentDay();
-  
-  if (currentDay === 0) {
-    console.log('❌ Pas en décembre, message du soir annulé');
-    return;
-  }
-
-  const todayQuestions = questions.filter(q => q.day === currentDay);
-  
-  // Classement
-  const leaderboard = data.users.map(user => {
+  // Compter les scores de chaque utilisateur
+  data.users.forEach(user => {
     const score = calculateUserScore(user.username, data);
     const answersCount = data.answers.filter(a => a.username.toLowerCase() === user.username.toLowerCase()).length;
     
-    return {
+    userScores[user.username] = {
       username: user.username,
-      score,
-      answersCount
+      score: score,
+      answersCount: answersCount
     };
-  }).sort((a, b) => b.score - a.score);
-
-  const testPrefix = TEST_MODE ? '🧪 [MODE TEST] ' : '';
-  let message = `${testPrefix}# 📊 Résultats du Jour ${currentDay} 📊\n\n`;
-  
-  // Top 3
-  message += `## 🏆 Top 3 Général\n`;
-  if (leaderboard.length >= 3) {
-    message += `🥇 **${leaderboard[0].username}** - ${leaderboard[0].score} points\n`;
-    message += `🥈 **${leaderboard[1].username}** - ${leaderboard[1].score} points\n`;
-    message += `🥉 **${leaderboard[2].username}** - ${leaderboard[2].score} points\n`;
-  } else if (leaderboard.length > 0) {
-    leaderboard.forEach((user, i) => {
-      const medals = ['🥇', '🥈', '🥉'];
-      message += `${medals[i]} **${user.username}** - ${user.score} points\n`;
-    });
-  } else {
-    message += `Aucun participant pour le moment 🎅\n`;
-  }
-  
-  // Classement complet
-  message += `\n## 📋 Classement Complet (${leaderboard.length} participants)\n`;
-  if (leaderboard.length > 0) {
-    leaderboard.slice(0, 10).forEach((user, index) => {
-      message += `${index + 1}. ${user.username} - **${user.score}** points (${user.answersCount} réponses)\n`;
-    });
-    if (leaderboard.length > 10) {
-      message += `... et ${leaderboard.length - 10} autres participants\n`;
-    }
-  }
-  
-  // Réponses (en spoiler)
-  message += `\n## ✅ Réponses du Jour ${currentDay}\n`;
-  todayQuestions.forEach(q => {
-    message += `\n**Q${q.id} (${q.group}):** ${q.question.substring(0, 80)}${q.question.length > 80 ? '...' : ''}\n`;
-    message += `||✓ Réponse: ${q.options[q.correctAnswer]}||\n`;
   });
   
-  message += `\n🎄 Rendez-vous demain pour de nouvelles questions ! 🎄`;
-
-  try {
-    const response = await fetch(DISCORD_WEBHOOK, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content: message })
-    });
-    
-    if (response.ok) {
-      console.log(`✅ [${new Date().toLocaleTimeString()}] Résultats du soir envoyés pour le jour ${currentDay}`);
-    } else {
-      console.error(`❌ Erreur Discord (status ${response.status}):`, await response.text());
-    }
-  } catch (error) {
-    console.error('❌ Erreur réseau Discord:', error.message);
-  }
+  // Convertir en tableau et trier
+  return Object.values(userScores).sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    return b.answersCount - a.answersCount;
+  });
 }
 
-// 3. MESSAGE DE TEST (manuel)
-async function sendTestDiscordMessage() {
-  const message = `# 🧪 TEST DISCORD - Calendrier de l'Avent
+function getTop3(data) {
+  const leaderboard = getLeaderboard(data);
+  return leaderboard.slice(0, 3);
+}
 
-✅ Le webhook Discord fonctionne correctement !
+// ========================================
+// 📊 STATISTIQUES DU JOUR
+// ========================================
 
-Configuration actuelle :
-${TEST_MODE ? '🧪 MODE TEST ACTIVÉ' : '📅 MODE PRODUCTION'}
-📅 Jour : ${getCurrentDay() || 'Hors période'}
-⏰ Horaire : ${isOpenHours() ? 'Ouvert' : 'Fermé'}
-🎯 Messages automatiques programmés :
-  • 🌅 Tous les jours à 8h00 : Nouvelles questions
-  • 🌙 Tous les jours à 23h30 : Résultats
-
-${TEST_MODE ? '⚠️ En mode test, les messages seront préfixés "🧪 [MODE TEST]"' : ''}
-
-Ce message est envoyé depuis le panneau admin. 🎄`;
-
-  try {
-    const response = await fetch(DISCORD_WEBHOOK, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content: message })
-    });
+function getDayStats(data, day) {
+  const dayQuestions = questions.filter(q => q.day === day);
+  const dayQuestionIds = dayQuestions.map(q => q.id);
+  
+  // Réponses du jour
+  const dayAnswers = data.answers.filter(a => dayQuestionIds.includes(a.questionId));
+  
+  // Compter les réponses correctes par question
+  const questionStats = dayQuestions.map(q => {
+    const qAnswers = dayAnswers.filter(a => a.questionId === q.id);
+    const correctAnswers = qAnswers.filter(a => a.answer === q.correctAnswer).length;
+    const totalAnswers = qAnswers.length;
     
-    if (response.ok) {
-      console.log('✅ Message de test Discord envoyé');
-      return true;
-    } else {
-      const errorText = await response.text();
-      console.error(`❌ Erreur Discord (status ${response.status}):`, errorText);
+    return {
+      questionId: q.id,
+      question: q.question,
+      correctAnswer: q.correctAnswer,
+      correctAnswersCount: correctAnswers,
+      totalAnswers: totalAnswers,
+      successRate: totalAnswers > 0 ? Math.round((correctAnswers / totalAnswers) * 100) : 0,
+      explanation: q.explanation
+    };
+  });
+  
+  return {
+    day: day,
+    questions: questionStats,
+    totalParticipants: new Set(dayAnswers.map(a => a.username)).size
+  };
+}
+
+// ========================================
+// 💬 DISCORD - MESSAGES AUTOMATIQUES
+// ========================================
+
+async function sendDiscordMessage(content, embeds = []) {
+  try {
+    const config = await readConfig();
+    const webhook = config.discordWebhook;
+    
+    if (!webhook || webhook === '') {
+      console.log('⚠️ Webhook Discord non configuré');
       return false;
     }
+    
+    const response = await fetch(webhook, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content, embeds })
+    });
+    
+    if (!response.ok) {
+      console.error('❌ Erreur Discord:', response.status);
+      return false;
+    }
+    
+    console.log('✅ Message Discord envoyé');
+    return true;
   } catch (error) {
-    console.error('❌ Erreur réseau Discord:', error.message);
+    console.error('❌ Erreur envoi Discord:', error);
     return false;
   }
 }
 
-// Obtenir le classement
-function getLeaderboard(data) {
-  const leaderboard = data.users.map(user => {
-    const score = calculateUserScore(user.username, data);
-    return {
-      username: user.username,
-      score: score
-    };
-  });
+// ========================================
+// 🌅 MESSAGE DU MATIN (8H) - ANNONCE
+// ========================================
+
+async function sendMorningAnnouncement() {
+  console.log('🌅 Envoi du message du matin...');
   
-  return leaderboard.sort((a, b) => b.score - a.score);
+  const currentDay = await getCurrentDay();
+  
+  if (currentDay === 0) {
+    console.log('❌ Hors période du calendrier');
+    return;
+  }
+  
+  const dayQuestions = questions.filter(q => q.day === currentDay);
+  
+  // Créer la liste des thèmes
+  const themes = dayQuestions.map((q, i) => `${i + 1}. ${q.group}`).join('\n');
+  
+  const content = `🎄 **CALENDRIER DE L'AVENT - JOUR ${currentDay}/25** 🎄\n\n` +
+    `☀️ Bonjour à tous !\n\n` +
+    `🎁 **4 nouvelles questions** sont maintenant disponibles !\n\n` +
+    `⏰ Vous avez jusqu'à **23h00** pour répondre !\n\n` +
+    `🏆 Les résultats seront annoncés ce soir à **23h** !\n\n` +
+    `🔗 Rendez-vous sur le site : **https://calendrier-de-l-avant-jtff.netlify.app**`;
+  
+  await sendDiscordMessage(content);
 }
 
-// Obtenir les statistiques d'un jour
-function getDayStats(data, day) {
-  const dayQuestions = questions.filter(q => q.day === day);
+// ========================================
+// 🌙 MESSAGE DU SOIR (23H) - RÉSULTATS
+// ========================================
+
+async function sendEveningResults() {
+  console.log('🌙 Envoi des résultats du soir...');
   
-  const questionsStats = dayQuestions.map(question => {
-    const answers = data.answers.filter(a => a.questionId === question.id);
-    const correctAnswersCount = answers.filter(a => a.answer === question.correctAnswer).length;
+  const currentDay = await getCurrentDay();
+  
+  if (currentDay === 0) {
+    console.log('❌ Hors période du calendrier');
+    return;
+  }
+  
+  const data = await readData();
+  const top3 = getTop3(data);
+  const dayStats = getDayStats(data, currentDay);
+  
+  // 🏆 TOP 3
+  let top3Text = '🏆 **CLASSEMENT GÉNÉRAL** 🏆\n\n';
+  const medals = ['🥇', '🥈', '🥉'];
+  
+  top3.forEach((user, index) => {
+    const medal = medals[index] || `${index + 1}.`;
+    top3Text += `${medal} **${user.username}** - ${user.score} points (${user.answersCount} questions)\n`;
+  });
+  
+  if (top3.length === 0) {
+    top3Text += '_(Aucun participant pour le moment)_\n';
+  }
+  
+  // 📊 STATISTIQUES DU JOUR
+  let statsText = `\n\n📊 **RÉSULTATS DU JOUR ${currentDay}** 📊\n\n`;
+  statsText += `👥 **${dayStats.totalParticipants} participants** ont répondu aujourd'hui\n\n`;
+  
+  // 📝 RÉPONSES DES QUESTIONS (EN SPOILER)
+  let answersText = `\n\n📝 **RÉPONSES AUX QUESTIONS DU JOUR ${currentDay}** 📝\n\n`;
+  
+  dayStats.questions.forEach((qStat, index) => {
+    const question = questions.find(q => q.id === qStat.questionId);
+    const letters = ['A', 'B', 'C', 'D'];
+    const correctLetter = letters[question.correctAnswer];
+    const correctOption = question.options[question.correctAnswer];
     
-    return {
-      questionId: question.id,
-      question: question.question,
-      group: question.group,
-      correctAnswer: question.correctAnswer,
-      options: question.options,
-      correctAnswersCount: correctAnswersCount,
-      totalAnswers: answers.length,
-      successRate: answers.length > 0 ? Math.round((correctAnswersCount / answers.length) * 100) : 0,
-      explanation: question.explanation
-    };
+    answersText += `**Question ${index + 1}** - ${qStat.question}\n`;
+    answersText += `📈 Taux de réussite : **${qStat.successRate}%** (${qStat.correctAnswersCount}/${qStat.totalAnswers})\n\n`;
   });
   
-  const participants = [...new Set(
-    data.answers
-      .filter(a => dayQuestions.some(q => q.id === a.questionId))
-      .map(a => a.username)
-  )];
+  // Message final
+  const content = `🎄 **CALENDRIER DE L'AVENT - JOUR ${currentDay}/25** 🎄\n\n` +
+    `🌙 **Bonsoir à tous !**\n\n` +
+    `La journée est terminée ! Voici les résultats :\n\n` +
+    top3Text +
+    statsText +
+    answersText +
+    `\n🎁 Rendez-vous demain à **8h** pour 4 nouvelles questions !\n\n` +
+    `🔗 Site : **https://calendrier-de-l-avant-jtff.netlify.app**`;
   
-  return {
-    day: day,
-    totalParticipants: participants.length,
-    questions: questionsStats
-  };
+  await sendDiscordMessage(content);
 }
 
-// ====== ROUTES API ======
+// ========================================
+// ⏰ CRONS AUTOMATIQUES
+// ========================================
 
-// Obtenir les questions disponibles
+let morningCron = null;
+let eveningCron = null;
+
+async function setupCrons() {
+  const config = await readConfig();
+  
+  // Arrêter les crons existants
+  if (morningCron) morningCron.stop();
+  if (eveningCron) eveningCron.stop();
+  
+  // Créer les expressions cron
+  const morningCronExpression = `${config.morningMinute} ${config.morningHour} * * *`;
+  const eveningCronExpression = `${config.eveningMinute} ${config.eveningHour} * * *`;
+  
+  console.log(`⏰ Cron matin : ${morningCronExpression} (${config.morningHour}h${String(config.morningMinute).padStart(2, '0')})`);
+  console.log(`⏰ Cron soir : ${eveningCronExpression} (${config.eveningHour}h${String(config.eveningMinute).padStart(2, '0')})`);
+  
+  // Message du matin (annonce nouvelles questions)
+  morningCron = cron.schedule(morningCronExpression, async () => {
+    console.log('🌅 CRON MATIN : Envoi de l\'annonce...');
+    await sendMorningAnnouncement();
+  });
+  
+  // Message du soir (résultats + top 3)
+  eveningCron = cron.schedule(eveningCronExpression, async () => {
+    console.log('🌙 CRON SOIR : Envoi des résultats...');
+    await sendEveningResults();
+  });
+  
+  console.log('✅ Crons configurés et démarrés');
+}
+
+// ========================================
+// 🌐 ROUTES API
+// ========================================
+
+// Health check
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', message: 'Server is running' });
+});
+
+// Obtenir les questions du jour
 app.get('/api/questions/today', async (req, res) => {
-  const currentDay = getCurrentDay();
+  const currentDay = await getCurrentDay();
   
   if (currentDay === 0) {
     return res.json({ 
@@ -334,7 +411,7 @@ app.get('/api/questions/today', async (req, res) => {
   res.json({
     available: true,
     currentDay,
-    isOpen: isOpenHours(),
+    isOpen: await isOpenHours(),
     questions: availableQuestions
   });
 });
@@ -359,10 +436,14 @@ app.post('/api/user', async (req, res) => {
     await writeData(data);
   }
   
-  const userAnswers = data.answers.filter(a => a.username.toLowerCase() === username.toLowerCase());
   const score = calculateUserScore(username, data);
+  const answers = data.answers.filter(a => a.username.toLowerCase() === username.toLowerCase());
   
-  res.json({ user, answers: userAnswers, score });
+  res.json({
+    user: user,
+    score: score,
+    answers: answers
+  });
 });
 
 // Soumettre une réponse
@@ -375,106 +456,200 @@ app.post('/api/answer', async (req, res) => {
   
   const data = await readData();
   
-  const user = data.users.find(u => u.username.toLowerCase() === username.toLowerCase());
-  if (!user) {
-    return res.status(404).json({ error: 'Utilisateur non trouvé' });
+  // Vérifier si l'utilisateur a déjà répondu
+  const existingAnswer = data.answers.find(
+    a => a.username.toLowerCase() === username.toLowerCase() && a.questionId === questionId
+  );
+  
+  if (existingAnswer) {
+    return res.json({ success: false, error: 'Vous avez déjà répondu à cette question' });
   }
   
+  // Vérifier si la question existe
   const question = questions.find(q => q.id === questionId);
   if (!question) {
     return res.status(404).json({ error: 'Question non trouvée' });
   }
   
-  const existingAnswerIndex = data.answers.findIndex(
-    a => a.username.toLowerCase() === username.toLowerCase() && a.questionId === questionId
-  );
-  
-  if (existingAnswerIndex !== -1) {
-    return res.status(400).json({ error: 'Vous avez déjà répondu à cette question' });
+  // Vérifier si on est dans les horaires
+  if (!(await isOpenHours())) {
+    return res.json({ success: false, error: 'Les questions ne sont pas disponibles en ce moment (8h-23h30)' });
   }
   
-  const newAnswer = {
-    username: username.toLowerCase(),
-    questionId,
-    answer,
+  // Enregistrer la réponse
+  data.answers.push({
+    username: username,
+    questionId: questionId,
+    answer: answer,
     answeredAt: new Date().toISOString()
-  };
+  });
   
-  data.answers.push(newAnswer);
   await writeData(data);
   
-  const isCorrect = answer === question.correctAnswer;
+  // Calculer le nouveau score
   const score = calculateUserScore(username, data);
+  const isCorrect = answer === question.correctAnswer;
   
-  res.json({ success: true, isCorrect, score });
+  res.json({
+    success: true,
+    isCorrect: isCorrect,
+    score: score
+  });
 });
 
-// Obtenir le classement
+// Classement
 app.get('/api/leaderboard', async (req, res) => {
   const data = await readData();
-  
-  const leaderboard = data.users.map(user => {
-    const score = calculateUserScore(user.username, data);
-    const answersCount = data.answers.filter(a => a.username.toLowerCase() === user.username.toLowerCase()).length;
-    
-    return {
-      username: user.username,
-      score,
-      answersCount
-    };
-  });
-  
-  leaderboard.sort((a, b) => {
-    if (b.score !== a.score) return b.score - a.score;
-    return a.answersCount - b.answersCount;
-  });
-  
+  const leaderboard = getLeaderboard(data);
   res.json(leaderboard);
 });
 
-// Admin: Login
-app.post('/api/admin/login', (req, res) => {
+// ========================================
+// 👨‍💼 ROUTES ADMIN
+// ========================================
+
+// Vérifier le mot de passe admin
+app.post('/api/admin/login', async (req, res) => {
   const { password } = req.body;
+  const config = await readConfig();
   
-  if (password === ADMIN_PASSWORD) {
+  if (password === config.adminPassword) {
     res.json({ success: true });
   } else {
-    res.status(401).json({ error: 'Mot de passe incorrect' });
+    res.status(401).json({ success: false, error: 'Mot de passe incorrect' });
   }
 });
 
-// Admin: Obtenir toutes les données
-// Admin: Statistiques générales
-app.get('/api/admin/stats', async (req, res) => {
-  const { password } = req.query;
+// Obtenir la configuration
+app.get('/api/admin/config', async (req, res) => {
+  const config = await readConfig();
+  res.json(config);
+});
+
+// Modifier la configuration
+app.post('/api/admin/config', async (req, res) => {
+  const { password, ...newConfig } = req.body;
+  const config = await readConfig();
   
-  if (password !== ADMIN_PASSWORD) {
-    return res.status(401).json({ error: 'Non autorisé' });
+  // Vérifier le mot de passe
+  if (password !== config.adminPassword) {
+    return res.status(401).json({ error: 'Mot de passe incorrect' });
   }
   
+  // Mettre à jour la configuration
+  const updatedConfig = { ...config, ...newConfig };
+  await writeConfig(updatedConfig);
+  
+  // Reconfigurer les crons avec les nouveaux horaires
+  await setupCrons();
+  
+  res.json({ success: true, config: updatedConfig });
+});
+
+// Test webhook matin
+app.post('/api/admin/test-morning', async (req, res) => {
+  const { password } = req.body;
+  const config = await readConfig();
+  
+  if (password !== config.adminPassword) {
+    return res.status(401).json({ error: 'Mot de passe incorrect' });
+  }
+  
+  await sendMorningAnnouncement();
+  res.json({ success: true, message: 'Message du matin envoyé' });
+});
+
+// Test webhook soir
+app.post('/api/admin/test-evening', async (req, res) => {
+  const { password } = req.body;
+  const config = await readConfig();
+  
+  if (password !== config.adminPassword) {
+    return res.status(401).json({ error: 'Mot de passe incorrect' });
+  }
+  
+  await sendEveningResults();
+  res.json({ success: true, message: 'Message du soir envoyé' });
+});
+
+// Obtenir les statistiques
+app.get('/api/admin/stats', async (req, res) => {
   const data = await readData();
-  const currentDay = getCurrentDay();
+  const currentDay = await getCurrentDay();
   
-  const leaderboard = getLeaderboard(data);
-  const dayStats = currentDay > 0 ? getDayStats(data, currentDay) : null;
-  
-  res.json({
+  const stats = {
     totalUsers: data.users.length,
     totalAnswers: data.answers.length,
     currentDay: currentDay,
-    leaderboard: leaderboard,
-    dayStats: dayStats
-  });
+    leaderboard: getLeaderboard(data),
+    dayStats: currentDay > 0 ? getDayStats(data, currentDay) : null
+  };
+  
+  res.json(stats);
 });
 
-// Admin: Obtenir la liste de tous les utilisateurs
-app.get('/api/admin/users', async (req, res) => {
-  const { password } = req.query;
+// Reset toutes les données (utilisateurs + réponses)
+app.post('/api/admin/reset-all', async (req, res) => {
+  const { password } = req.body;
+  const config = await readConfig();
   
-  if (password !== ADMIN_PASSWORD) {
-    return res.status(401).json({ error: 'Non autorisé' });
+  if (password !== config.adminPassword) {
+    return res.status(401).json({ error: 'Mot de passe incorrect' });
   }
   
+  // Reset complet
+  await writeData({ users: [], answers: [] });
+  
+  res.json({ success: true, message: 'Toutes les données ont été supprimées' });
+});
+
+// Supprimer un utilisateur spécifique
+app.post('/api/admin/delete-user', async (req, res) => {
+  const { password, username } = req.body;
+  const config = await readConfig();
+  
+  if (password !== config.adminPassword) {
+    return res.status(401).json({ error: 'Mot de passe incorrect' });
+  }
+  
+  if (!username) {
+    return res.status(400).json({ error: 'Username requis' });
+  }
+  
+  const data = await readData();
+  
+  // Supprimer l'utilisateur
+  data.users = data.users.filter(u => u.username.toLowerCase() !== username.toLowerCase());
+  
+  // Supprimer ses réponses
+  data.answers = data.answers.filter(a => a.username.toLowerCase() !== username.toLowerCase());
+  
+  await writeData(data);
+  
+  res.json({ success: true, message: `Utilisateur ${username} supprimé` });
+});
+
+// Reset seulement les réponses (garder les utilisateurs)
+app.post('/api/admin/reset-answers', async (req, res) => {
+  const { password } = req.body;
+  const config = await readConfig();
+  
+  if (password !== config.adminPassword) {
+    return res.status(401).json({ error: 'Mot de passe incorrect' });
+  }
+  
+  const data = await readData();
+  
+  // Garder les utilisateurs, supprimer les réponses
+  data.answers = [];
+  
+  await writeData(data);
+  
+  res.json({ success: true, message: 'Toutes les réponses ont été supprimées' });
+});
+
+// Obtenir la liste de tous les utilisateurs
+app.get('/api/admin/users', async (req, res) => {
   const data = await readData();
   const usersWithStats = data.users.map(user => {
     const score = calculateUserScore(user.username, data);
@@ -490,304 +665,137 @@ app.get('/api/admin/users', async (req, res) => {
   res.json(usersWithStats);
 });
 
-// Admin: Configuration (vide pour l'instant)
-app.get('/api/admin/config', async (req, res) => {
-  const { password } = req.query;
+// Obtenir les stats d'un jour spécifique
+app.get('/api/admin/day-stats/:day', async (req, res) => {
+  const day = parseInt(req.params.day);
   
-  if (password !== ADMIN_PASSWORD) {
-    return res.status(401).json({ error: 'Non autorisé' });
-  }
-  
-  res.json({
-    startDate: '2025-12-01',
-    endDate: '2025-12-25',
-    morningTime: '08:00',
-    eveningTime: '23:00',
-    discordWebhook: DISCORD_WEBHOOK ? '***configured***' : null
-  });
-});
-
-// Admin: Stats globales par catégorie
-app.get('/api/admin/global-category-stats', async (req, res) => {
-  const { password } = req.query;
-  
-  if (password !== ADMIN_PASSWORD) {
-    return res.status(401).json({ error: 'Non autorisé' });
-  }
-  
-  try {
-    const data = await readData();
-    
-    const categories = [...new Set(questions.map(q => q.group))];
-    const categoryStats = {};
-    
-    categories.forEach(category => {
-      const categoryQuestions = questions.filter(q => q.group === category);
-      const categoryQuestionIds = categoryQuestions.map(q => q.id);
-      const categoryAnswers = data.answers.filter(a => categoryQuestionIds.includes(a.questionId));
-      
-      let correctCount = 0;
-      categoryAnswers.forEach(answer => {
-        const question = questions.find(q => q.id === answer.questionId);
-        if (question && answer.answer === question.correctAnswer) {
-          correctCount++;
-        }
-      });
-      
-      categoryStats[category] = {
-        totalQuestions: categoryQuestions.length,
-        totalAnswers: categoryAnswers.length,
-        correctAnswers: correctCount,
-        percentage: categoryAnswers.length > 0 ? Math.round((correctCount / categoryAnswers.length) * 100) : 0,
-        participationRate: categoryAnswers.length > 0 && data.users.length > 0 
-          ? Math.round((categoryAnswers.length / (categoryQuestions.length * data.users.length)) * 100) 
-          : 0
-      };
-    });
-    
-    res.json({
-      totalParticipants: data.users.length,
-      categoryStats: categoryStats
-    });
-  } catch (error) {
-    console.error('Erreur:', error);
-    res.status(500).json({ error: 'Erreur serveur' });
-  }
-});
-
-app.get('/api/admin/data', async (req, res) => {
-  const { password } = req.query;
-  
-  if (password !== ADMIN_PASSWORD) {
-    return res.status(401).json({ error: 'Non autorisé' });
+  if (isNaN(day) || day < 1 || day > 25) {
+    return res.status(400).json({ error: 'Jour invalide (1-25)' });
   }
   
   const data = await readData();
+  const dayStats = getDayStats(data, day);
   
-  const questionStats = questions.map(question => {
-    const answers = data.answers.filter(a => a.questionId === question.id);
-    const correctAnswers = answers.filter(a => a.answer === question.correctAnswer).length;
-    
-    return {
-      questionId: question.id,
-      day: question.day,
-      question: question.question,
-      totalAnswers: answers.length,
-      correctAnswers,
-      successRate: answers.length > 0 ? Math.round((correctAnswers / answers.length) * 100) : 0
+  res.json(dayStats);
+});
+
+// Obtenir les stats détaillées d'un joueur
+app.get('/api/admin/player-stats/:username', async (req, res) => {
+  const username = req.params.username;
+  const data = await readData();
+  
+  // Vérifier si l'utilisateur existe
+  const user = data.users.find(u => u.username.toLowerCase() === username.toLowerCase());
+  if (!user) {
+    return res.status(404).json({ error: 'Utilisateur non trouvé' });
+  }
+  
+  // Récupérer toutes les réponses du joueur
+  const userAnswers = data.answers.filter(a => a.username.toLowerCase() === username.toLowerCase());
+  
+  // Calculer le score total
+  const totalScore = calculateUserScore(username, data);
+  
+  // Stats par catégorie (groupe)
+  const categoryStats = {};
+  userAnswers.forEach(answer => {
+    const question = questions.find(q => q.id === answer.questionId);
+    if (question) {
+      const category = question.group;
+      if (!categoryStats[category]) {
+        categoryStats[category] = {
+          total: 0,
+          correct: 0
+        };
+      }
+      categoryStats[category].total++;
+      if (answer.answer === question.correctAnswer) {
+        categoryStats[category].correct++;
+      }
+    }
+  });
+  
+  // Calculer les pourcentages par catégorie
+  const categoryPercentages = {};
+  Object.keys(categoryStats).forEach(category => {
+    const stats = categoryStats[category];
+    categoryPercentages[category] = {
+      correct: stats.correct,
+      total: stats.total,
+      percentage: stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0
     };
   });
   
-  res.json({
-    users: data.users.length,
-    totalAnswers: data.answers.length,
-    questionStats,
-    allUsers: data.users.map(u => ({
-      ...u,
-      score: calculateUserScore(u.username, data)
-    }))
-  });
-});
-
-// Admin: Obtenir les détails d'un joueur
-app.get('/api/admin/user/:username', async (req, res) => {
-  const { password } = req.query;
-  const { username } = req.params;
-  
-  if (password !== ADMIN_PASSWORD) {
-    return res.status(401).json({ error: 'Non autorisé' });
-  }
-  
-  try {
-    const data = await readData();
-    
-    // Trouver l'utilisateur
-    const user = data.users.find(u => u.username.toLowerCase() === username.toLowerCase());
-    if (!user) {
-      return res.status(404).json({ error: 'Utilisateur non trouvé' });
-    }
-    
-    // Toutes les réponses de l'utilisateur
-    const userAnswers = data.answers.filter(a => a.username.toLowerCase() === username.toLowerCase());
-    
-    // Détails par réponse avec les informations de la question
-    const answersDetails = userAnswers.map(answer => {
-      const question = questions.find(q => q.id === answer.questionId);
-      const isCorrect = answer.answer === question.correctAnswer;
-      
+  // Réponses par jour
+  const answersByDay = {};
+  for (let day = 1; day <= 25; day++) {
+    const dayQuestions = questions.filter(q => q.day === day);
+    const dayAnswers = dayQuestions.map(q => {
+      const userAnswer = userAnswers.find(a => a.questionId === q.id);
       return {
-        questionId: question.id,
-        day: question.day,
-        group: question.group,
-        question: question.question,
-        userAnswer: answer.answer,
-        correctAnswer: question.correctAnswer,
-        userAnswerText: question.options[answer.answer],
-        correctAnswerText: question.options[question.correctAnswer],
-        isCorrect,
-        answeredAt: answer.answeredAt
+        questionId: q.id,
+        question: q.question,
+        group: q.group,
+        options: q.options,
+        correctAnswer: q.correctAnswer,
+        userAnswer: userAnswer ? userAnswer.answer : null,
+        isCorrect: userAnswer ? userAnswer.answer === q.correctAnswer : null,
+        answeredAt: userAnswer ? userAnswer.answeredAt : null
       };
     });
     
-    // Stats par catégorie
-    const statsByCategory = {};
-    ['Navigation aérienne', 'Contrôle aérien', 'Réglementation', 'Cartes aéronautiques'].forEach(category => {
-      const categoryAnswers = answersDetails.filter(a => a.group === category);
-      const correctCount = categoryAnswers.filter(a => a.isCorrect).length;
-      const total = categoryAnswers.length;
-      
-      statsByCategory[category] = {
-        correct: correctCount,
-        total,
-        percentage: total > 0 ? Math.round((correctCount / total) * 100) : 0
-      };
-    });
-    
-    // Stats par jour
-    const statsByDay = {};
-    for (let day = 1; day <= 25; day++) {
-      const dayAnswers = answersDetails.filter(a => a.day === day);
-      if (dayAnswers.length > 0) {
-        const correctCount = dayAnswers.filter(a => a.isCorrect).length;
-        statsByDay[day] = {
-          correct: correctCount,
-          total: dayAnswers.length,
-          percentage: Math.round((correctCount / dayAnswers.length) * 100)
-        };
-      }
+    if (dayAnswers.some(a => a.userAnswer !== null)) {
+      answersByDay[day] = dayAnswers;
     }
+  }
+  
+  res.json({
+    username: user.username,
+    totalScore: totalScore,
+    totalAnswers: userAnswers.length,
+    categoryStats: categoryPercentages,
+    answersByDay: answersByDay
+  });
+});
+
+// ========================================
+// 🚀 DÉMARRAGE DU SERVEUR
+// ========================================
+
+async function startServer() {
+  try {
+    // Initialiser les fichiers
+    await initDataFile();
+    await initConfigFile();
     
-    // Score total
-    const totalScore = answersDetails.filter(a => a.isCorrect).length;
+    console.log('✅ Fichiers initialisés');
     
-    res.json({
-      user,
-      totalScore,
-      totalAnswers: answersDetails.length,
-      answersDetails,
-      statsByCategory,
-      statsByDay
+    // Configurer les crons
+    await setupCrons();
+    
+    // Démarrer le serveur
+    app.listen(PORT, async () => {
+      const day = await getCurrentDay();
+      console.log('');
+      console.log('🎄 ========================================');
+      console.log('   CALENDRIER DE L\'AVENT - SERVEUR ACTIF');
+      console.log('   ========================================');
+      console.log('');
+      console.log(`   🌐 Port : ${PORT}`);
+      console.log(`   📅 Jour actuel : ${day}/25`);
+      console.log('');
+      console.log('   ⏰ Automatisation activée :');
+      console.log('      • Matin : Annonce nouvelles questions');
+      console.log('      • Soir : Résultats + Top 3 + Réponses');
+      console.log('');
+      console.log('🎄 ========================================');
+      console.log('');
     });
   } catch (error) {
-    console.error('Erreur:', error);
-    res.status(500).json({ error: 'Erreur serveur' });
+    console.error('❌ Erreur au démarrage:', error);
+    process.exit(1);
   }
-});
-
-// Admin: Supprimer un utilisateur
-app.delete('/api/admin/user/:username', async (req, res) => {
-  const { password } = req.query;
-  const { username } = req.params;
-  
-  if (password !== ADMIN_PASSWORD) {
-    return res.status(401).json({ error: 'Non autorisé' });
-  }
-  
-  try {
-    const data = await readData();
-    data.users = data.users.filter(u => u.username.toLowerCase() !== username.toLowerCase());
-    data.answers = data.answers.filter(a => a.username.toLowerCase() !== username.toLowerCase());
-    await writeData(data);
-    
-    res.json({ success: true, message: `Utilisateur ${username} supprimé` });
-  } catch (error) {
-    console.error('Erreur:', error);
-    res.status(500).json({ error: 'Erreur serveur' });
-  }
-});
-
-// Admin: Reset complet
-app.post('/api/admin/reset-all', async (req, res) => {
-  const { password } = req.body;
-  
-  if (password !== ADMIN_PASSWORD) {
-    return res.status(401).json({ error: 'Non autorisé' });
-  }
-  
-  try {
-    await writeData({ users: [], answers: [] });
-    res.json({ success: true, message: 'Tous les participants ont été supprimés' });
-  } catch (error) {
-    console.error('Erreur:', error);
-    res.status(500).json({ error: 'Erreur serveur' });
-  }
-});
-
-// Admin: Test Discord (manuel)
-app.post('/api/admin/test-discord', async (req, res) => {
-  const { password } = req.body;
-  
-  if (password !== ADMIN_PASSWORD) {
-    return res.status(401).json({ error: 'Non autorisé' });
-  }
-  
-  console.log('🧪 Test Discord demandé depuis l\'admin...');
-  const success = await sendTestDiscordMessage();
-  
-  if (success) {
-    res.json({ success: true, message: 'Message de test envoyé sur Discord !' });
-  } else {
-    res.status(500).json({ success: false, error: 'Erreur lors de l\'envoi sur Discord' });
-  }
-});
-
-// Admin: Forcer message du matin (test)
-app.post('/api/admin/test-morning', async (req, res) => {
-  const { password } = req.body;
-  
-  if (password !== ADMIN_PASSWORD) {
-    return res.status(401).json({ error: 'Non autorisé' });
-  }
-  
-  await sendMorningDiscordMessage();
-  res.json({ success: true, message: 'Message du matin envoyé' });
-});
-
-// Admin: Forcer message du soir (test)
-app.post('/api/admin/test-evening', async (req, res) => {
-  const { password } = req.body;
-  
-  if (password !== ADMIN_PASSWORD) {
-    return res.status(401).json({ error: 'Non autorisé' });
-  }
-  
-  await sendEveningDiscordMessage();
-  res.json({ success: true, message: 'Message du soir envoyé' });
-});
-
-// ====== CRON JOBS ======
-// Les crons fonctionnent TOUJOURS aux vraies heures (8h et 23h30)
-// même en mode test, pour vérifier que l'automatisation marche !
-
-// Message du matin à 8h00 tous les jours de décembre
-cron.schedule('0 8 * 12 *', () => {
-  const now = new Date();
-  console.log(`🌅 [${now.toLocaleTimeString()}] 8h00 - Envoi automatique du message du matin...`);
-  sendMorningDiscordMessage();
-});
-
-// Message du soir à 23h30 tous les jours de décembre
-cron.schedule('30 23 * 12 *', () => {
-  const now = new Date();
-  console.log(`🌙 [${now.toLocaleTimeString()}] 23h30 - Envoi automatique des résultats du soir...`);
-  sendEveningDiscordMessage();
-});
-
-// Démarrer le serveur
-async function startServer() {
-  await initDataFile();
-  app.listen(PORT, () => {
-    const now = new Date();
-    console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
-    console.log(`${TEST_MODE ? '🧪 MODE TEST ACTIVÉ' : '📅 MODE PRODUCTION'}`);
-    console.log(`📅 Jour simulé/actuel: ${getCurrentDay()}`);
-    console.log(`⏰ Horaires quiz: ${isOpenHours() ? 'Ouvert 24h/24' : '8h-23h30'}`);
-    console.log(`🔔 Crons automatiques ACTIFS :`);
-    console.log(`   • 🌅 Message du matin à 8h00`);
-    console.log(`   • 🌙 Message du soir à 23h30`);
-    console.log(`⏱️  Heure actuelle: ${now.toLocaleTimeString()}`);
-    console.log(`${TEST_MODE ? '⚠️  En mode test, les messages Discord seront préfixés "🧪 [MODE TEST]"' : ''}`);
-  });
 }
 
+// Démarrer
 startServer();
