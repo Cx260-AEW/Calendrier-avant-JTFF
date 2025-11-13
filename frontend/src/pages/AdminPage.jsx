@@ -23,6 +23,10 @@ function AdminPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [showResetAnswersConfirm, setShowResetAnswersConfirm] = useState(false);
+  const [selectedDay, setSelectedDay] = useState(null);
+  const [selectedDayStats, setSelectedDayStats] = useState(null);
+  const [selectedPlayer, setSelectedPlayer] = useState('');
+  const [playerStats, setPlayerStats] = useState(null);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -273,6 +277,30 @@ function AdminPage() {
     
     setLoading(false);
     setTimeout(() => setMessage(''), 5000);
+  };
+
+  const loadDayStats = async (day) => {
+    try {
+      const response = await fetch(`${API_URL}/api/admin/day-stats/${day}`);
+      const data = await response.json();
+      setSelectedDayStats(data);
+      setSelectedDay(day);
+    } catch (error) {
+      console.error('Erreur:', error);
+    }
+  };
+
+  const loadPlayerStats = async (username) => {
+    if (!username) return;
+    
+    try {
+      const response = await fetch(`${API_URL}/api/admin/player-stats/${username}`);
+      const data = await response.json();
+      setPlayerStats(data);
+      setSelectedPlayer(username);
+    } catch (error) {
+      console.error('Erreur:', error);
+    }
   };
 
   // Page de connexion
@@ -587,15 +615,43 @@ function AdminPage() {
           {/* Statistiques du jour */}
           {stats.dayStats && stats.dayStats.questions && stats.dayStats.questions.length > 0 && (
             <div className="card">
-              <h2 style={{ fontSize: '32px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                📊 Statistiques du jour {stats.dayStats.day}
-              </h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <h2 style={{ fontSize: '32px', margin: 0, display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  📊 Statistiques du jour {stats.dayStats.day}
+                </h2>
+                
+                {/* Sélecteur de jour */}
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <label style={{ fontSize: '14px', fontWeight: '600', color: '#6b7280' }}>
+                    Voir un autre jour :
+                  </label>
+                  <select
+                    value={selectedDay || stats.currentDay}
+                    onChange={(e) => loadDayStats(parseInt(e.target.value))}
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: '8px',
+                      border: '2px solid #667eea',
+                      background: 'white',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      color: '#667eea',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {Array.from({ length: stats.currentDay }, (_, i) => i + 1).map(day => (
+                      <option key={day} value={day}>Jour {day}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              
               <p style={{ fontSize: '18px', color: '#6b7280', marginBottom: '24px' }}>
-                👥 {stats.dayStats.totalParticipants} participants ont répondu aux questions d'aujourd'hui
+                👥 {(selectedDayStats || stats.dayStats).totalParticipants} participants ont répondu aux questions {selectedDay ? `du jour ${selectedDay}` : 'd\'aujourd\'hui'}
               </p>
               
               <div style={{ display: 'grid', gap: '20px' }}>
-                {stats.dayStats.questions.map((qStat, index) => {
+                {(selectedDayStats || stats.dayStats).questions.map((qStat, index) => {
                   const successRate = qStat.successRate;
                   const getColor = () => {
                     if (successRate >= 75) return { bg: '#d1fae5', border: '#10b981', text: '#065f46', bar: '#10b981' };
@@ -694,6 +750,223 @@ function AdminPage() {
               <p style={{ color: '#6b7280' }}>
                 Les statistiques apparaîtront une fois que les participants auront commencé à répondre
               </p>
+            </div>
+          )}
+
+          {/* Stats par joueur */}
+          {users && users.length > 0 && (
+            <div className="card" style={{ marginTop: '32px' }}>
+              <h2 style={{ fontSize: '32px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                👤 Statistiques par joueur
+              </h2>
+              
+              {/* Sélecteur de joueur */}
+              <div style={{ marginBottom: '32px' }}>
+                <label style={{ display: 'block', marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}>
+                  Sélectionner un joueur :
+                </label>
+                <select
+                  value={selectedPlayer}
+                  onChange={(e) => loadPlayerStats(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    border: '2px solid #667eea',
+                    background: 'white',
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    color: '#667eea',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <option value="">-- Choisir un joueur --</option>
+                  {users.map((user, index) => (
+                    <option key={index} value={user.username}>
+                      {user.username} ({user.score} points - {user.answersCount} réponses)
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Affichage des stats du joueur */}
+              {playerStats && (
+                <div>
+                  {/* Header joueur */}
+                  <div style={{
+                    padding: '24px',
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    borderRadius: '16px',
+                    color: 'white',
+                    marginBottom: '32px'
+                  }}>
+                    <h3 style={{ fontSize: '28px', marginBottom: '16px' }}>
+                      {playerStats.username}
+                    </h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+                      <div>
+                        <p style={{ fontSize: '14px', opacity: 0.9, marginBottom: '4px' }}>Score total</p>
+                        <p style={{ fontSize: '32px', fontWeight: '700', margin: 0 }}>{playerStats.totalScore}</p>
+                      </div>
+                      <div>
+                        <p style={{ fontSize: '14px', opacity: 0.9', marginBottom: '4px' }}>Questions répondues</p>
+                        <p style={{ fontSize: '32px', fontWeight: '700', margin: 0 }}>{playerStats.totalAnswers}</p>
+                      </div>
+                      <div>
+                        <p style={{ fontSize: '14px', opacity: 0.9', marginBottom: '4px' }}>Taux de réussite</p>
+                        <p style={{ fontSize: '32px', fontWeight: '700', margin: 0 }}>
+                          {playerStats.totalAnswers > 0 ? Math.round((playerStats.totalScore / playerStats.totalAnswers) * 100) : 0}%
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Stats par catégorie */}
+                  <div style={{ marginBottom: '32px' }}>
+                    <h3 style={{ fontSize: '24px', marginBottom: '16px', color: '#667eea' }}>
+                      📊 Pourcentage par catégorie
+                    </h3>
+                    <div style={{ display: 'grid', gap: '12px' }}>
+                      {Object.entries(playerStats.categoryStats).map(([category, stats], index) => {
+                        const percentage = stats.percentage;
+                        const getColor = () => {
+                          if (percentage >= 75) return '#10b981';
+                          if (percentage >= 50) return '#f59e0b';
+                          return '#ef4444';
+                        };
+                        const color = getColor();
+                        
+                        return (
+                          <div key={index} style={{
+                            padding: '16px',
+                            background: '#f9fafb',
+                            borderRadius: '12px',
+                            border: '2px solid #e5e7eb'
+                          }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                              <span style={{ fontWeight: '600', fontSize: '16px' }}>{category}</span>
+                              <span style={{
+                                padding: '4px 12px',
+                                background: color,
+                                color: 'white',
+                                borderRadius: '12px',
+                                fontSize: '14px',
+                                fontWeight: '700'
+                              }}>
+                                {percentage}%
+                              </span>
+                            </div>
+                            <div style={{
+                              width: '100%',
+                              height: '8px',
+                              background: '#e5e7eb',
+                              borderRadius: '4px',
+                              overflow: 'hidden'
+                            }}>
+                              <div style={{
+                                width: `${percentage}%`,
+                                height: '100%',
+                                background: color,
+                                transition: 'width 0.5s ease'
+                              }}></div>
+                            </div>
+                            <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '8px', margin: 0 }}>
+                              {stats.correct}/{stats.total} questions correctes
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Réponses par jour */}
+                  <div>
+                    <h3 style={{ fontSize: '24px', marginBottom: '16px', color: '#667eea' }}>
+                      📅 Réponses par jour
+                    </h3>
+                    {Object.entries(playerStats.answersByDay).sort(([a], [b]) => parseInt(a) - parseInt(b)).map(([day, dayAnswers]) => (
+                      <div key={day} style={{
+                        marginBottom: '24px',
+                        padding: '20px',
+                        background: '#f9fafb',
+                        borderRadius: '12px',
+                        border: '2px solid #e5e7eb'
+                      }}>
+                        <h4 style={{ fontSize: '20px', marginBottom: '16px', color: '#667eea' }}>
+                          🎄 Jour {day}
+                        </h4>
+                        <div style={{ display: 'grid', gap: '12px' }}>
+                          {dayAnswers.map((answer, index) => (
+                            <div key={index} style={{
+                              padding: '16px',
+                              background: 'white',
+                              borderRadius: '8px',
+                              border: `2px solid ${answer.isCorrect === true ? '#10b981' : answer.isCorrect === false ? '#ef4444' : '#e5e7eb'}`
+                            }}>
+                              <div style={{ display: 'flex', justifyContent: 'between', alignItems: 'start', gap: '12px' }}>
+                                <div style={{ flex: 1 }}>
+                                  <p style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>
+                                    {answer.group}
+                                  </p>
+                                  <p style={{ fontWeight: '600', marginBottom: '12px', fontSize: '14px' }}>
+                                    {answer.question}
+                                  </p>
+                                  
+                                  {/* Options */}
+                                  <div style={{ display: 'grid', gap: '8px' }}>
+                                    {answer.options.map((option, optIndex) => {
+                                      const isCorrect = optIndex === answer.correctAnswer;
+                                      const isUserAnswer = optIndex === answer.userAnswer;
+                                      const letters = ['A', 'B', 'C', 'D'];
+                                      
+                                      return (
+                                        <div key={optIndex} style={{
+                                          padding: '8px 12px',
+                                          background: isCorrect ? '#d1fae5' : isUserAnswer && !isCorrect ? '#fee2e2' : '#f3f4f6',
+                                          borderRadius: '6px',
+                                          border: `2px solid ${isCorrect ? '#10b981' : isUserAnswer && !isCorrect ? '#ef4444' : '#e5e7eb'}`,
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: '8px',
+                                          fontSize: '14px'
+                                        }}>
+                                          <span style={{ fontWeight: '700' }}>{letters[optIndex]}.</span>
+                                          <span>{option}</span>
+                                          {isCorrect && <span style={{ marginLeft: 'auto' }}>✅</span>}
+                                          {isUserAnswer && !isCorrect && <span style={{ marginLeft: 'auto' }}>❌</span>}
+                                          {isUserAnswer && isCorrect && <span style={{ marginLeft: 'auto' }}>✅</span>}
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                                <div style={{
+                                  padding: '8px 16px',
+                                  background: answer.isCorrect ? '#10b981' : '#ef4444',
+                                  color: 'white',
+                                  borderRadius: '20px',
+                                  fontSize: '24px',
+                                  fontWeight: '700'
+                                }}>
+                                  {answer.isCorrect ? '✅' : '❌'}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Message si aucun joueur sélectionné */}
+              {!playerStats && (
+                <div style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
+                  <div style={{ fontSize: '48px', marginBottom: '16px' }}>👤</div>
+                  <p style={{ fontSize: '18px' }}>Sélectionne un joueur pour voir ses statistiques détaillées</p>
+                </div>
+              )}
             </div>
           )}
         </div>
