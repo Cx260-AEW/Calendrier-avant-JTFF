@@ -667,6 +667,99 @@ app.get('/api/admin/users', async (req, res) => {
   res.json(usersWithStats);
 });
 
+// Obtenir les stats d'un jour spécifique
+app.get('/api/admin/day-stats/:day', async (req, res) => {
+  const day = parseInt(req.params.day);
+  
+  if (isNaN(day) || day < 1 || day > 25) {
+    return res.status(400).json({ error: 'Jour invalide (1-25)' });
+  }
+  
+  const data = await readData();
+  const dayStats = getDayStats(data, day);
+  
+  res.json(dayStats);
+});
+
+// Obtenir les stats détaillées d'un joueur
+app.get('/api/admin/player-stats/:username', async (req, res) => {
+  const username = req.params.username;
+  const data = await readData();
+  
+  // Vérifier si l'utilisateur existe
+  const user = data.users.find(u => u.username.toLowerCase() === username.toLowerCase());
+  if (!user) {
+    return res.status(404).json({ error: 'Utilisateur non trouvé' });
+  }
+  
+  // Récupérer toutes les réponses du joueur
+  const userAnswers = data.answers.filter(a => a.username.toLowerCase() === username.toLowerCase());
+  
+  // Calculer le score total
+  const totalScore = calculateUserScore(username, data);
+  
+  // Stats par catégorie (groupe)
+  const categoryStats = {};
+  userAnswers.forEach(answer => {
+    const question = questions.find(q => q.id === answer.questionId);
+    if (question) {
+      const category = question.group;
+      if (!categoryStats[category]) {
+        categoryStats[category] = {
+          total: 0,
+          correct: 0
+        };
+      }
+      categoryStats[category].total++;
+      if (answer.answer === question.correctAnswer) {
+        categoryStats[category].correct++;
+      }
+    }
+  });
+  
+  // Calculer les pourcentages par catégorie
+  const categoryPercentages = {};
+  Object.keys(categoryStats).forEach(category => {
+    const stats = categoryStats[category];
+    categoryPercentages[category] = {
+      correct: stats.correct,
+      total: stats.total,
+      percentage: stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0
+    };
+  });
+  
+  // Réponses par jour
+  const answersByDay = {};
+  for (let day = 1; day <= 25; day++) {
+    const dayQuestions = questions.filter(q => q.day === day);
+    const dayAnswers = dayQuestions.map(q => {
+      const userAnswer = userAnswers.find(a => a.questionId === q.id);
+      return {
+        questionId: q.id,
+        question: q.question,
+        group: q.group,
+        options: q.options,
+        correctAnswer: q.correctAnswer,
+        userAnswer: userAnswer ? userAnswer.answer : null,
+        isCorrect: userAnswer ? userAnswer.answer === q.correctAnswer : null,
+        answeredAt: userAnswer ? userAnswer.answeredAt : null
+      };
+    });
+    
+    if (dayAnswers.some(a => a.userAnswer !== null)) {
+      answersByDay[day] = dayAnswers;
+    }
+  }
+  
+  res.json({
+    username: user.username,
+    totalScore: totalScore,
+    totalAnswers: userAnswers.length,
+    categoryStats: categoryPercentages,
+    answersByDay: answersByDay
+  });
+});
+
 // ========================================
 // 🚀 DÉMARRAGE DU SERVEUR
 // ========================================
