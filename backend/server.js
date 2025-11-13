@@ -583,11 +583,88 @@ app.get('/api/admin/stats', async (req, res) => {
     totalUsers: data.users.length,
     totalAnswers: data.answers.length,
     currentDay: currentDay,
-    leaderboard: getTop3(data),
+    leaderboard: getLeaderboard(data),
     dayStats: currentDay > 0 ? getDayStats(data, currentDay) : null
   };
   
   res.json(stats);
+});
+
+// Reset toutes les données (utilisateurs + réponses)
+app.post('/api/admin/reset-all', async (req, res) => {
+  const { password } = req.body;
+  const config = await readConfig();
+  
+  if (password !== config.adminPassword) {
+    return res.status(401).json({ error: 'Mot de passe incorrect' });
+  }
+  
+  // Reset complet
+  await writeData({ users: [], answers: [] });
+  
+  res.json({ success: true, message: 'Toutes les données ont été supprimées' });
+});
+
+// Supprimer un utilisateur spécifique
+app.post('/api/admin/delete-user', async (req, res) => {
+  const { password, username } = req.body;
+  const config = await readConfig();
+  
+  if (password !== config.adminPassword) {
+    return res.status(401).json({ error: 'Mot de passe incorrect' });
+  }
+  
+  if (!username) {
+    return res.status(400).json({ error: 'Username requis' });
+  }
+  
+  const data = await readData();
+  
+  // Supprimer l'utilisateur
+  data.users = data.users.filter(u => u.username.toLowerCase() !== username.toLowerCase());
+  
+  // Supprimer ses réponses
+  data.answers = data.answers.filter(a => a.username.toLowerCase() !== username.toLowerCase());
+  
+  await writeData(data);
+  
+  res.json({ success: true, message: `Utilisateur ${username} supprimé` });
+});
+
+// Reset seulement les réponses (garder les utilisateurs)
+app.post('/api/admin/reset-answers', async (req, res) => {
+  const { password } = req.body;
+  const config = await readConfig();
+  
+  if (password !== config.adminPassword) {
+    return res.status(401).json({ error: 'Mot de passe incorrect' });
+  }
+  
+  const data = await readData();
+  
+  // Garder les utilisateurs, supprimer les réponses
+  data.answers = [];
+  
+  await writeData(data);
+  
+  res.json({ success: true, message: 'Toutes les réponses ont été supprimées' });
+});
+
+// Obtenir la liste de tous les utilisateurs
+app.get('/api/admin/users', async (req, res) => {
+  const data = await readData();
+  const usersWithStats = data.users.map(user => {
+    const score = calculateUserScore(user.username, data);
+    const answersCount = data.answers.filter(a => a.username.toLowerCase() === user.username.toLowerCase()).length;
+    return {
+      username: user.username,
+      createdAt: user.createdAt,
+      score: score,
+      answersCount: answersCount
+    };
+  });
+  
+  res.json(usersWithStats);
 });
 
 // ========================================
