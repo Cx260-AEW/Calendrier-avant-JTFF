@@ -27,15 +27,18 @@ function AdminPage() {
   const [selectedDayStats, setSelectedDayStats] = useState(null);
   const [selectedPlayer, setSelectedPlayer] = useState('');
   const [playerStats, setPlayerStats] = useState(null);
+  const [globalCategoryStats, setGlobalCategoryStats] = useState(null);
 
   useEffect(() => {
     if (isAuthenticated) {
       loadConfig();
       loadStats();
       loadUsers();
+      loadGlobalCategoryStats();
       const interval = setInterval(() => {
         loadStats();
         loadUsers();
+        loadGlobalCategoryStats();
       }, 10000);
       return () => clearInterval(interval);
     }
@@ -298,6 +301,16 @@ function AdminPage() {
       const data = await response.json();
       setPlayerStats(data);
       setSelectedPlayer(username);
+    } catch (error) {
+      console.error('Erreur:', error);
+    }
+  };
+
+  const loadGlobalCategoryStats = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/admin/global-category-stats?password=${password}`);
+      const data = await response.json();
+      setGlobalCategoryStats(data);
     } catch (error) {
       console.error('Erreur:', error);
     }
@@ -609,6 +622,93 @@ function AdminPage() {
                   ... et {stats.leaderboard.length - 10} autres participants
                 </p>
               )}
+            </div>
+          )}
+
+          {/* Statistiques globales par catégorie */}
+          {globalCategoryStats && globalCategoryStats.categoryStats && (
+            <div className="card" style={{ marginTop: '32px' }}>
+              <h2 style={{ fontSize: '32px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                📊 Statistiques Globales par Catégorie
+              </h2>
+              <p style={{ fontSize: '18px', color: '#6b7280', marginBottom: '24px' }}>
+                👥 Performance de tous les {globalCategoryStats.totalParticipants} participants confondus
+              </p>
+              
+              <div style={{ display: 'grid', gap: '16px' }}>
+                {Object.entries(globalCategoryStats.categoryStats).sort((a, b) => b[1].percentage - a[1].percentage).map(([category, stats], index) => {
+                  const percentage = stats.percentage;
+                  const getColor = () => {
+                    if (percentage >= 75) return '#10b981';
+                    if (percentage >= 50) return '#f59e0b';
+                    return '#ef4444';
+                  };
+                  const color = getColor();
+                  
+                  return (
+                    <div key={index} style={{
+                      padding: '20px',
+                      background: '#f9fafb',
+                      borderRadius: '12px',
+                      border: '2px solid #e5e7eb'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                        <div>
+                          <h3 style={{ fontSize: '20px', fontWeight: '700', margin: 0, marginBottom: '4px' }}>
+                            {category}
+                          </h3>
+                          <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
+                            {stats.totalQuestions} questions • {stats.totalAnswers} réponses au total
+                          </p>
+                        </div>
+                        <div style={{
+                          padding: '8px 20px',
+                          background: color,
+                          color: 'white',
+                          borderRadius: '20px',
+                          fontSize: '24px',
+                          fontWeight: '700'
+                        }}>
+                          {percentage}%
+                        </div>
+                      </div>
+                      
+                      {/* Barre de progression */}
+                      <div style={{
+                        width: '100%',
+                        height: '12px',
+                        background: '#e5e7eb',
+                        borderRadius: '6px',
+                        overflow: 'hidden',
+                        marginBottom: '12px'
+                      }}>
+                        <div style={{
+                          width: `${percentage}%`,
+                          height: '100%',
+                          background: color,
+                          transition: 'width 0.5s ease'
+                        }}></div>
+                      </div>
+                      
+                      {/* Détails */}
+                      <div style={{ display: 'flex', gap: '24px', fontSize: '14px' }}>
+                        <div>
+                          <span style={{ color: '#6b7280' }}>Bonnes réponses : </span>
+                          <span style={{ fontWeight: '700', color: '#10b981' }}>{stats.correctAnswers}</span>
+                        </div>
+                        <div>
+                          <span style={{ color: '#6b7280' }}>Mauvaises réponses : </span>
+                          <span style={{ fontWeight: '700', color: '#ef4444' }}>{stats.totalAnswers - stats.correctAnswers}</span>
+                        </div>
+                        <div>
+                          <span style={{ color: '#6b7280' }}>Taux de participation : </span>
+                          <span style={{ fontWeight: '700', color: '#667eea' }}>{stats.participationRate}%</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
 
