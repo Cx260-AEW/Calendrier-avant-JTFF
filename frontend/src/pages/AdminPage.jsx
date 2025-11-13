@@ -753,12 +753,11 @@ function AdminPage() {
             </div>
           )}
 
-          {/* Stats par joueur */}
-          {users && users.length > 0 && (
-            <div className="card" style={{ marginTop: '32px' }}>
-              <h2 style={{ fontSize: '32px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                👤 Statistiques par joueur
-              </h2>
+          {/* Stats par joueur - TOUJOURS VISIBLE */}
+          <div className="card" style={{ marginTop: '32px' }}>
+            <h2 style={{ fontSize: '32px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              👤 Statistiques par joueur
+            </h2>
               
               {/* Sélecteur de joueur */}
               <div style={{ marginBottom: '32px' }}>
