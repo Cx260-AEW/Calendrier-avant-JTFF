@@ -269,6 +269,53 @@ Ce message est envoyé depuis le panneau admin. 🎄`;
   }
 }
 
+// Obtenir le classement
+function getLeaderboard(data) {
+  const leaderboard = data.users.map(user => {
+    const score = calculateUserScore(user.username, data);
+    return {
+      username: user.username,
+      score: score
+    };
+  });
+  
+  return leaderboard.sort((a, b) => b.score - a.score);
+}
+
+// Obtenir les statistiques d'un jour
+function getDayStats(data, day) {
+  const dayQuestions = questions.filter(q => q.day === day);
+  
+  const questionsStats = dayQuestions.map(question => {
+    const answers = data.answers.filter(a => a.questionId === question.id);
+    const correctAnswersCount = answers.filter(a => a.answer === question.correctAnswer).length;
+    
+    return {
+      questionId: question.id,
+      question: question.question,
+      group: question.group,
+      correctAnswer: question.correctAnswer,
+      options: question.options,
+      correctAnswersCount: correctAnswersCount,
+      totalAnswers: answers.length,
+      successRate: answers.length > 0 ? Math.round((correctAnswersCount / answers.length) * 100) : 0,
+      explanation: question.explanation
+    };
+  });
+  
+  const participants = [...new Set(
+    data.answers
+      .filter(a => dayQuestions.some(q => q.id === a.questionId))
+      .map(a => a.username)
+  )];
+  
+  return {
+    day: day,
+    totalParticipants: participants.length,
+    questions: questionsStats
+  };
+}
+
 // ====== ROUTES API ======
 
 // Obtenir les questions disponibles
@@ -397,6 +444,117 @@ app.post('/api/admin/login', (req, res) => {
 });
 
 // Admin: Obtenir toutes les données
+// Admin: Statistiques générales
+app.get('/api/admin/stats', async (req, res) => {
+  const { password } = req.query;
+  
+  if (password !== ADMIN_PASSWORD) {
+    return res.status(401).json({ error: 'Non autorisé' });
+  }
+  
+  const data = await readData();
+  const currentDay = getCurrentDay();
+  
+  const leaderboard = getLeaderboard(data);
+  const dayStats = currentDay > 0 ? getDayStats(data, currentDay) : null;
+  
+  res.json({
+    totalUsers: data.users.length,
+    totalAnswers: data.answers.length,
+    currentDay: currentDay,
+    leaderboard: leaderboard,
+    dayStats: dayStats
+  });
+});
+
+// Admin: Obtenir la liste de tous les utilisateurs
+app.get('/api/admin/users', async (req, res) => {
+  const { password } = req.query;
+  
+  if (password !== ADMIN_PASSWORD) {
+    return res.status(401).json({ error: 'Non autorisé' });
+  }
+  
+  const data = await readData();
+  const usersWithStats = data.users.map(user => {
+    const score = calculateUserScore(user.username, data);
+    const answersCount = data.answers.filter(a => a.username.toLowerCase() === user.username.toLowerCase()).length;
+    return {
+      username: user.username,
+      createdAt: user.createdAt,
+      score: score,
+      answersCount: answersCount
+    };
+  });
+  
+  res.json(usersWithStats);
+});
+
+// Admin: Configuration (vide pour l'instant)
+app.get('/api/admin/config', async (req, res) => {
+  const { password } = req.query;
+  
+  if (password !== ADMIN_PASSWORD) {
+    return res.status(401).json({ error: 'Non autorisé' });
+  }
+  
+  res.json({
+    startDate: '2025-12-01',
+    endDate: '2025-12-25',
+    morningTime: '08:00',
+    eveningTime: '23:00',
+    discordWebhook: DISCORD_WEBHOOK ? '***configured***' : null
+  });
+});
+
+// Admin: Stats globales par catégorie
+app.get('/api/admin/global-category-stats', async (req, res) => {
+  const { password } = req.query;
+  
+  if (password !== ADMIN_PASSWORD) {
+    return res.status(401).json({ error: 'Non autorisé' });
+  }
+  
+  try {
+    const data = await readData();
+    
+    const categories = [...new Set(questions.map(q => q.group))];
+    const categoryStats = {};
+    
+    categories.forEach(category => {
+      const categoryQuestions = questions.filter(q => q.group === category);
+      const categoryQuestionIds = categoryQuestions.map(q => q.id);
+      const categoryAnswers = data.answers.filter(a => categoryQuestionIds.includes(a.questionId));
+      
+      let correctCount = 0;
+      categoryAnswers.forEach(answer => {
+        const question = questions.find(q => q.id === answer.questionId);
+        if (question && answer.answer === question.correctAnswer) {
+          correctCount++;
+        }
+      });
+      
+      categoryStats[category] = {
+        totalQuestions: categoryQuestions.length,
+        totalAnswers: categoryAnswers.length,
+        correctAnswers: correctCount,
+        percentage: categoryAnswers.length > 0 ? Math.round((correctCount / categoryAnswers.length) * 100) : 0,
+        participationRate: categoryAnswers.length > 0 && data.users.length > 0 
+          ? Math.round((categoryAnswers.length / (categoryQuestions.length * data.users.length)) * 100) 
+          : 0
+      };
+    });
+    
+    res.json({
+      totalParticipants: data.users.length,
+      categoryStats: categoryStats
+    });
+  } catch (error) {
+    console.error('Erreur:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 app.get('/api/admin/data', async (req, res) => {
   const { password } = req.query;
   
@@ -595,106 +753,6 @@ app.post('/api/admin/test-evening', async (req, res) => {
   
   await sendEveningDiscordMessage();
   res.json({ success: true, message: 'Message du soir envoyé' });
-});
-
-// Admin: Stats globales par catégorie (tous joueurs confondus)
-app.get('/api/admin/global-category-stats', async (req, res) => {
-  const { password } = req.query;
-  
-  if (password !== ADMIN_PASSWORD) {
-    return res.status(401).json({ error: 'Non autorisé' });
-  }
-  
-  try {
-    const data = await readData();
-    
-    // Obtenir toutes les catégories uniques
-    const categories = [...new Set(questions.map(q => q.group))];
-    
-    const categoryStats = {};
-    
-    categories.forEach(category => {
-      // Questions de cette catégorie
-      const categoryQuestions = questions.filter(q => q.group === category);
-      const categoryQuestionIds = categoryQuestions.map(q => q.id);
-      
-      // Réponses à ces questions (tous joueurs)
-      const categoryAnswers = data.answers.filter(a => categoryQuestionIds.includes(a.questionId));
-      
-      // Calculer bonnes réponses
-      let correctCount = 0;
-      categoryAnswers.forEach(answer => {
-        const question = questions.find(q => q.id === answer.questionId);
-        if (question && answer.answer === question.correctAnswer) {
-          correctCount++;
-        }
-      });
-      
-      categoryStats[category] = {
-        totalQuestions: categoryQuestions.length,
-        totalAnswers: categoryAnswers.length,
-        correctAnswers: correctCount,
-        percentage: categoryAnswers.length > 0 ? Math.round((correctCount / categoryAnswers.length) * 100) : 0,
-        participationRate: categoryAnswers.length > 0 && data.users.length > 0 
-          ? Math.round((categoryAnswers.length / (categoryQuestions.length * data.users.length)) * 100) 
-          : 0
-      };
-    });
-    
-    res.json({
-      totalParticipants: data.users.length,
-      categoryStats: categoryStats
-    });
-  } catch (error) {
-    console.error('Erreur:', error);
-    res.status(500).json({ error: 'Erreur serveur' });
-  }
-});
-
-// Admin: Télécharger backup des données
-app.get('/api/admin/backup', async (req, res) => {
-  const { password } = req.query;
-  
-  if (password !== ADMIN_PASSWORD) {
-    return res.status(401).json({ error: 'Non autorisé' });
-  }
-  
-  try {
-    const data = await readData();
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-    
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Content-Disposition', `attachment; filename=data-backup-${timestamp}.json`);
-    res.json(data);
-  } catch (error) {
-    console.error('Erreur backup:', error);
-    res.status(500).json({ error: 'Erreur lors du backup' });
-  }
-});
-
-// Admin: Restaurer les données depuis un backup
-app.post('/api/admin/restore', async (req, res) => {
-  const { password, data } = req.body;
-  
-  if (password !== ADMIN_PASSWORD) {
-    return res.status(401).json({ error: 'Non autorisé' });
-  }
-  
-  try {
-    // Valider la structure des données
-    if (!data || !Array.isArray(data.users) || !Array.isArray(data.answers)) {
-      return res.status(400).json({ error: 'Format de données invalide' });
-    }
-    
-    await writeData(data);
-    res.json({ 
-      success: true, 
-      message: `Données restaurées : ${data.users.length} utilisateurs, ${data.answers.length} réponses` 
-    });
-  } catch (error) {
-    console.error('Erreur restore:', error);
-    res.status(500).json({ error: 'Erreur lors de la restauration' });
-  }
 });
 
 // ====== CRON JOBS ======
