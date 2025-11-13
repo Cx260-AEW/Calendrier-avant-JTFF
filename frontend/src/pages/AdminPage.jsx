@@ -18,12 +18,21 @@ function AdminPage() {
   const [eveningHour, setEveningHour] = useState(23);
   const [eveningMinute, setEveningMinute] = useState(0);
   const [discordWebhook, setDiscordWebhook] = useState('');
+  const [users, setUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [showResetAnswersConfirm, setShowResetAnswersConfirm] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
       loadConfig();
       loadStats();
-      const interval = setInterval(loadStats, 10000);
+      loadUsers();
+      const interval = setInterval(() => {
+        loadStats();
+        loadUsers();
+      }, 10000);
       return () => clearInterval(interval);
     }
   }, [isAuthenticated]);
@@ -160,6 +169,103 @@ function AdminPage() {
         setMessage('✅ Message du soir envoyé sur Discord !');
       } else {
         setMessage('❌ Erreur lors de l\'envoi');
+      }
+    } catch (error) {
+      setMessage('❌ Erreur de connexion');
+    }
+    
+    setLoading(false);
+    setTimeout(() => setMessage(''), 5000);
+  };
+
+  const loadUsers = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/admin/users`);
+      const data = await response.json();
+      setUsers(data);
+    } catch (error) {
+      console.error('Erreur:', error);
+    }
+  };
+
+  const handleResetAll = async () => {
+    setLoading(true);
+    
+    try {
+      const response = await fetch(`${API_URL}/api/admin/reset-all`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setMessage('✅ Toutes les données ont été supprimées !');
+        setShowResetConfirm(false);
+        await loadStats();
+        await loadUsers();
+      } else {
+        setMessage('❌ Erreur lors de la suppression');
+      }
+    } catch (error) {
+      setMessage('❌ Erreur de connexion');
+    }
+    
+    setLoading(false);
+    setTimeout(() => setMessage(''), 5000);
+  };
+
+  const handleDeleteUser = async () => {
+    if (!selectedUser) return;
+    
+    setLoading(true);
+    
+    try {
+      const response = await fetch(`${API_URL}/api/admin/delete-user`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password, username: selectedUser })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setMessage(`✅ Utilisateur ${selectedUser} supprimé !`);
+        setShowDeleteConfirm(false);
+        setSelectedUser('');
+        await loadStats();
+        await loadUsers();
+      } else {
+        setMessage('❌ Erreur lors de la suppression');
+      }
+    } catch (error) {
+      setMessage('❌ Erreur de connexion');
+    }
+    
+    setLoading(false);
+    setTimeout(() => setMessage(''), 5000);
+  };
+
+  const handleResetAnswers = async () => {
+    setLoading(true);
+    
+    try {
+      const response = await fetch(`${API_URL}/api/admin/reset-answers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setMessage('✅ Toutes les réponses ont été supprimées !');
+        setShowResetAnswersConfirm(false);
+        await loadStats();
+        await loadUsers();
+      } else {
+        setMessage('❌ Erreur lors de la suppression');
       }
     } catch (error) {
       setMessage('❌ Erreur de connexion');
@@ -863,6 +969,337 @@ function AdminPage() {
               💡 Ces boutons envoient immédiatement les messages sur Discord pour tester la configuration
             </p>
           </div>
+
+          {/* Gestion des données */}
+          <div style={{ marginTop: '48px', paddingTop: '40px', borderTop: '3px solid #ef4444' }}>
+            <h3 style={{ 
+              fontSize: '24px', 
+              marginBottom: '8px', 
+              color: '#ef4444',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px'
+            }}>
+              🗑️ Gestion des données
+            </h3>
+            <p style={{ 
+              fontSize: '14px', 
+              color: '#991b1b', 
+              marginBottom: '24px',
+              fontWeight: '600'
+            }}>
+              ⚠️ ZONE DANGEREUSE - Ces actions sont irréversibles !
+            </p>
+
+            {/* Liste des utilisateurs */}
+            {users && users.length > 0 && (
+              <div style={{ marginBottom: '32px' }}>
+                <h4 style={{ fontSize: '18px', marginBottom: '16px', fontWeight: '600' }}>
+                  👥 Utilisateurs inscrits ({users.length})
+                </h4>
+                <div style={{ 
+                  maxHeight: '300px', 
+                  overflowY: 'auto', 
+                  background: '#f9fafb', 
+                  borderRadius: '8px',
+                  padding: '12px',
+                  border: '2px solid #e5e7eb'
+                }}>
+                  {users.map((user, index) => (
+                    <div key={index} style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '12px',
+                      background: 'white',
+                      borderRadius: '8px',
+                      marginBottom: '8px',
+                      border: '1px solid #e5e7eb'
+                    }}>
+                      <div>
+                        <p style={{ fontWeight: '600', margin: 0 }}>{user.username}</p>
+                        <p style={{ fontSize: '12px', color: '#6b7280', margin: '4px 0 0 0' }}>
+                          {user.answersCount} réponses • {user.score} points
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setSelectedUser(user.username);
+                          setShowDeleteConfirm(true);
+                        }}
+                        style={{
+                          padding: '8px 16px',
+                          background: '#ef4444',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          fontSize: '14px',
+                          fontWeight: '600'
+                        }}
+                      >
+                        🗑️ Supprimer
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Boutons de suppression/reset */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div>
+                <button 
+                  onClick={() => setShowResetAnswersConfirm(true)}
+                  disabled={loading}
+                  style={{ 
+                    width: '100%',
+                    padding: '20px',
+                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                    color: 'white',
+                    fontSize: '16px',
+                    fontWeight: '700',
+                    border: 'none',
+                    borderRadius: '12px',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 15px rgba(245, 158, 11, 0.3)'
+                  }}
+                >
+                  🔄 Reset les réponses
+                </button>
+                <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '8px', textAlign: 'center' }}>
+                  Garde les utilisateurs, supprime toutes les réponses
+                </p>
+              </div>
+
+              <div>
+                <button 
+                  onClick={() => setShowResetConfirm(true)}
+                  disabled={loading}
+                  style={{ 
+                    width: '100%',
+                    padding: '20px',
+                    background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                    color: 'white',
+                    fontSize: '16px',
+                    fontWeight: '700',
+                    border: 'none',
+                    borderRadius: '12px',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 15px rgba(239, 68, 68, 0.3)'
+                  }}
+                >
+                  ❌ Reset TOUT
+                </button>
+                <p style={{ fontSize: '12px', color: '#6b7280', marginTop: '8px', textAlign: 'center' }}>
+                  Supprime utilisateurs ET réponses
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Modales de confirmation */}
+          {showDeleteConfirm && (
+            <div style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0, 0, 0, 0.7)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000
+            }}>
+              <div style={{
+                background: 'white',
+                padding: '32px',
+                borderRadius: '16px',
+                maxWidth: '500px',
+                width: '90%',
+                boxShadow: '0 20px 50px rgba(0, 0, 0, 0.3)'
+              }}>
+                <h3 style={{ fontSize: '24px', marginBottom: '16px', color: '#ef4444' }}>
+                  ⚠️ Confirmer la suppression
+                </h3>
+                <p style={{ marginBottom: '24px', color: '#6b7280' }}>
+                  Voulez-vous vraiment supprimer l'utilisateur <strong>{selectedUser}</strong> et toutes ses réponses ?
+                </p>
+                <p style={{ marginBottom: '24px', color: '#991b1b', fontWeight: '600', fontSize: '14px' }}>
+                  ⚠️ Cette action est irréversible !
+                </p>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <button
+                    onClick={() => {
+                      setShowDeleteConfirm(false);
+                      setSelectedUser('');
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: '12px',
+                      background: '#e5e7eb',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontWeight: '600'
+                    }}
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={handleDeleteUser}
+                    disabled={loading}
+                    style={{
+                      flex: 1,
+                      padding: '12px',
+                      background: '#ef4444',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontWeight: '600'
+                    }}
+                  >
+                    {loading ? 'Suppression...' : 'Supprimer'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {showResetAnswersConfirm && (
+            <div style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0, 0, 0, 0.7)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000
+            }}>
+              <div style={{
+                background: 'white',
+                padding: '32px',
+                borderRadius: '16px',
+                maxWidth: '500px',
+                width: '90%',
+                boxShadow: '0 20px 50px rgba(0, 0, 0, 0.3)'
+              }}>
+                <h3 style={{ fontSize: '24px', marginBottom: '16px', color: '#f59e0b' }}>
+                  ⚠️ Confirmer le reset des réponses
+                </h3>
+                <p style={{ marginBottom: '24px', color: '#6b7280' }}>
+                  Voulez-vous vraiment supprimer <strong>TOUTES les réponses</strong> ?
+                </p>
+                <p style={{ marginBottom: '24px', color: '#92400e', fontWeight: '600', fontSize: '14px' }}>
+                  Les utilisateurs resteront inscrits mais leurs réponses seront supprimées.
+                </p>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <button
+                    onClick={() => setShowResetAnswersConfirm(false)}
+                    style={{
+                      flex: 1,
+                      padding: '12px',
+                      background: '#e5e7eb',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontWeight: '600'
+                    }}
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={handleResetAnswers}
+                    disabled={loading}
+                    style={{
+                      flex: 1,
+                      padding: '12px',
+                      background: '#f59e0b',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontWeight: '600'
+                    }}
+                  >
+                    {loading ? 'Reset...' : 'Reset les réponses'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {showResetConfirm && (
+            <div style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0, 0, 0, 0.7)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000
+            }}>
+              <div style={{
+                background: 'white',
+                padding: '32px',
+                borderRadius: '16px',
+                maxWidth: '500px',
+                width: '90%',
+                boxShadow: '0 20px 50px rgba(0, 0, 0, 0.3)'
+              }}>
+                <h3 style={{ fontSize: '24px', marginBottom: '16px', color: '#ef4444' }}>
+                  ⚠️ DANGER - Confirmer le reset complet
+                </h3>
+                <p style={{ marginBottom: '24px', color: '#6b7280' }}>
+                  Voulez-vous vraiment supprimer <strong>TOUS les utilisateurs ET TOUTES les réponses</strong> ?
+                </p>
+                <p style={{ marginBottom: '24px', color: '#991b1b', fontWeight: '700', fontSize: '16px', textAlign: 'center' }}>
+                  ⚠️ CETTE ACTION EST IRRÉVERSIBLE !<br/>
+                  Toutes les données seront perdues !
+                </p>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <button
+                    onClick={() => setShowResetConfirm(false)}
+                    style={{
+                      flex: 1,
+                      padding: '12px',
+                      background: '#e5e7eb',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontWeight: '600'
+                    }}
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={handleResetAll}
+                    disabled={loading}
+                    style={{
+                      flex: 1,
+                      padding: '12px',
+                      background: '#ef4444',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontWeight: '600'
+                    }}
+                  >
+                    {loading ? 'Reset...' : 'Reset TOUT'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
