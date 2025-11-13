@@ -651,6 +651,52 @@ app.get('/api/admin/global-category-stats', async (req, res) => {
   }
 });
 
+// Admin: Télécharger backup des données
+app.get('/api/admin/backup', async (req, res) => {
+  const { password } = req.query;
+  
+  if (password !== ADMIN_PASSWORD) {
+    return res.status(401).json({ error: 'Non autorisé' });
+  }
+  
+  try {
+    const data = await readData();
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename=data-backup-${timestamp}.json`);
+    res.json(data);
+  } catch (error) {
+    console.error('Erreur backup:', error);
+    res.status(500).json({ error: 'Erreur lors du backup' });
+  }
+});
+
+// Admin: Restaurer les données depuis un backup
+app.post('/api/admin/restore', async (req, res) => {
+  const { password, data } = req.body;
+  
+  if (password !== ADMIN_PASSWORD) {
+    return res.status(401).json({ error: 'Non autorisé' });
+  }
+  
+  try {
+    // Valider la structure des données
+    if (!data || !Array.isArray(data.users) || !Array.isArray(data.answers)) {
+      return res.status(400).json({ error: 'Format de données invalide' });
+    }
+    
+    await writeData(data);
+    res.json({ 
+      success: true, 
+      message: `Données restaurées : ${data.users.length} utilisateurs, ${data.answers.length} réponses` 
+    });
+  } catch (error) {
+    console.error('Erreur restore:', error);
+    res.status(500).json({ error: 'Erreur lors de la restauration' });
+  }
+});
+
 // ====== CRON JOBS ======
 // Les crons fonctionnent TOUJOURS aux vraies heures (8h et 23h30)
 // même en mode test, pour vérifier que l'automatisation marche !
