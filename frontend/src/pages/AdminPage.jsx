@@ -808,11 +808,11 @@ function AdminPage() {
                         <p style={{ fontSize: '32px', fontWeight: '700', margin: 0 }}>{playerStats.totalScore}</p>
                       </div>
                       <div>
-                        <p style={{ fontSize: '14px', opacity: 0.9', marginBottom: '4px' }}>Questions répondues</p>
+                        <p style={{ fontSize: '14px', opacity: 0.9, marginBottom: '4px' }}>Questions répondues</p>
                         <p style={{ fontSize: '32px', fontWeight: '700', margin: 0 }}>{playerStats.totalAnswers}</p>
                       </div>
                       <div>
-                        <p style={{ fontSize: '14px', opacity: 0.9', marginBottom: '4px' }}>Taux de réussite</p>
+                        <p style={{ fontSize: '14px', opacity: 0.9, marginBottom: '4px' }}>Taux de réussite</p>
                         <p style={{ fontSize: '32px', fontWeight: '700', margin: 0 }}>
                           {playerStats.totalAnswers > 0 ? Math.round((playerStats.totalScore / playerStats.totalAnswers) * 100) : 0}%
                         </p>
