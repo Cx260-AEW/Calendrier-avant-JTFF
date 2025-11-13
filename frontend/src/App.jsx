@@ -43,8 +43,8 @@ function App() {
     <Router>
       <div className="app">
         <div className="christmas-header">
-          <h1>🎄 Calendrier de l'Avent QCM 🎄</h1>
-          <p style={{ fontSize: '20px', marginTop: '8px' }}>Navigation Aérienne</p>
+          <h1>🎄 Calendrier de l'Avent 2025 🎄</h1>
+          <p style={{ fontSize: '20px', marginTop: '8px' }}>QCM Aéronautique - JTFF</p>
         </div>
 
         {user && (
