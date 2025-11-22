@@ -758,6 +758,60 @@ app.get('/api/admin/player-stats/:username', async (req, res) => {
   });
 });
 
+// Admin: Statistiques globales par catégorie (tous les joueurs confondus)
+app.get('/api/admin/global-category-stats', async (req, res) => {
+  const { password } = req.query;
+  
+  if (password !== ADMIN_PASSWORD) {
+    return res.status(401).json({ error: 'Non autorisé' });
+  }
+  
+  try {
+    const data = await readData();
+    
+    // Extraire toutes les catégories uniques depuis questions.js
+    const categories = [...new Set(questions.map(q => q.group))];
+    
+    const categoryStats = {};
+    
+    categories.forEach(category => {
+      // Questions de cette catégorie
+      const categoryQuestions = questions.filter(q => q.group === category);
+      const categoryQuestionIds = categoryQuestions.map(q => q.id);
+      
+      // Toutes les réponses à ces questions (tous joueurs)
+      const categoryAnswers = data.answers.filter(a => categoryQuestionIds.includes(a.questionId));
+      
+      // Calculer le nombre de bonnes réponses
+      let correctCount = 0;
+      categoryAnswers.forEach(answer => {
+        const question = questions.find(q => q.id === answer.questionId);
+        if (question && answer.answer === question.correctAnswer) {
+          correctCount++;
+        }
+      });
+      
+      categoryStats[category] = {
+        totalQuestions: categoryQuestions.length,
+        totalAnswers: categoryAnswers.length,
+        correctAnswers: correctCount,
+        percentage: categoryAnswers.length > 0 ? Math.round((correctCount / categoryAnswers.length) * 100) : 0,
+        participationRate: categoryAnswers.length > 0 && data.users.length > 0 
+          ? Math.round((categoryAnswers.length / (categoryQuestions.length * data.users.length)) * 100) 
+          : 0
+      };
+    });
+    
+    res.json({
+      totalParticipants: data.users.length,
+      categoryStats: categoryStats
+    });
+  } catch (error) {
+    console.error('Erreur:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
 // ========================================
 // 🚀 DÉMARRAGE DU SERVEUR
 // ========================================
