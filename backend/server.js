@@ -37,7 +37,7 @@ const DEFAULT_CONFIG = {
   eveningHour: 23,                // Heure du message du soir
   eveningMinute: 0,               // Minute du message du soir
   discordWebhook: 'https://discord.com/api/webhooks/1437838332930560112/3ys2Itxs5xq5eoLt1Rck8yXaONi7YFUoTRSpm5ARnQdmrRSY3m0l704Gci4w0AR2YRqO',
-  adminPassword: process.env.ADMIN_PASSWORD,
+  adminPassword: 'ADMIN2025',
   openingHour: 8,                 // Heure d'ouverture quotidienne
   closingHour: 23,                // Heure de fermeture quotidienne
   closingMinute: 30               // Minute de fermeture (23h30)
@@ -153,10 +153,25 @@ function calculateUserScore(username, data) {
   
   userAnswers.forEach(answer => {
     const question = questions.find(q => q.id === answer.questionId);
-    if (question && answer.answer === question.correctAnswer) {
-      score++;
+    
+    // Si un override existe, l'utiliser
+    if (answer.overrideCorrect !== undefined) {
+      if (answer.overrideCorrect === true) {
+        score++;
+      }
+    } else {
+      // Sinon, vérifier normalement
+      if (question && answer.answer === question.correctAnswer) {
+        score++;
+      }
     }
   });
+  
+  // Ajouter les points bonus de l'utilisateur
+  const user = data.users.find(u => u.username.toLowerCase() === username.toLowerCase());
+  if (user && user.bonusPoints) {
+    score += user.bonusPoints;
+  }
   
   return score;
 }
@@ -758,9 +773,9 @@ app.get('/api/admin/player-stats/:username', async (req, res) => {
   });
 });
 
-// Admin: Statistiques globales par catégorie (tous les joueurs confondus)
-app.get('/api/admin/global-category-stats', async (req, res) => {
-  const { password } = req.query;
+// Admin: Ajouter/retirer des points bonus à un joueur
+app.post('/api/admin/adjust-bonus-points', async (req, res) => {
+  const { password, username, points, reason } = req.body;
   const config = await readConfig();
   
   if (password !== config.adminPassword) {
@@ -769,43 +784,115 @@ app.get('/api/admin/global-category-stats', async (req, res) => {
   
   try {
     const data = await readData();
+    const user = data.users.find(u => u.username.toLowerCase() === username.toLowerCase());
     
-    // Extraire toutes les catégories uniques depuis questions.js
-    const categories = [...new Set(questions.map(q => q.group))];
+    if (!user) {
+      return res.status(404).json({ error: 'Utilisateur non trouvé' });
+    }
     
-    const categoryStats = {};
+    // Initialiser bonusPoints s'il n'existe pas
+    if (!user.bonusPoints) {
+      user.bonusPoints = 0;
+    }
     
-    categories.forEach(category => {
-      // Questions de cette catégorie
-      const categoryQuestions = questions.filter(q => q.group === category);
-      const categoryQuestionIds = categoryQuestions.map(q => q.id);
-      
-      // Toutes les réponses à ces questions (tous joueurs)
-      const categoryAnswers = data.answers.filter(a => categoryQuestionIds.includes(a.questionId));
-      
-      // Calculer le nombre de bonnes réponses
-      let correctCount = 0;
-      categoryAnswers.forEach(answer => {
-        const question = questions.find(q => q.id === answer.questionId);
-        if (question && answer.answer === question.correctAnswer) {
-          correctCount++;
-        }
-      });
-      
-      categoryStats[category] = {
-        totalQuestions: categoryQuestions.length,
-        totalAnswers: categoryAnswers.length,
-        correctAnswers: correctCount,
-        percentage: categoryAnswers.length > 0 ? Math.round((correctCount / categoryAnswers.length) * 100) : 0,
-        participationRate: categoryAnswers.length > 0 && data.users.length > 0 
-          ? Math.round((categoryAnswers.length / (categoryQuestions.length * data.users.length)) * 100) 
-          : 0
-      };
+    // Ajouter/retirer les points
+    user.bonusPoints += points;
+    
+    // Ajouter l'historique des modifications
+    if (!user.pointsHistory) {
+      user.pointsHistory = [];
+    }
+    
+    user.pointsHistory.push({
+      date: new Date().toISOString(),
+      points: points,
+      reason: reason || 'Ajustement manuel',
+      by: 'admin'
     });
     
-    res.json({
-      totalParticipants: data.users.length,
-      categoryStats: categoryStats
+    await writeData(data);
+    
+    res.json({ 
+      success: true, 
+      message: `${points > 0 ? 'Ajouté' : 'Retiré'} ${Math.abs(points)} point(s) à ${username}`,
+      newBonusPoints: user.bonusPoints,
+      newTotalScore: calculateUserScore(username, data)
+    });
+  } catch (error) {
+    console.error('Erreur:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// Admin: Forcer une réponse comme correcte/incorrecte
+app.post('/api/admin/override-answer', async (req, res) => {
+  const { password, username, questionId, forceCorrect, reason } = req.body;
+  const config = await readConfig();
+  
+  if (password !== config.adminPassword) {
+    return res.status(401).json({ error: 'Non autorisé' });
+  }
+  
+  try {
+    const data = await readData();
+    const answer = data.answers.find(a => 
+      a.username.toLowerCase() === username.toLowerCase() && 
+      a.questionId === questionId
+    );
+    
+    if (!answer) {
+      return res.status(404).json({ error: 'Réponse non trouvée' });
+    }
+    
+    // Ajouter l'override
+    answer.overrideCorrect = forceCorrect;
+    answer.overrideReason = reason || 'Ajustement admin';
+    answer.overrideDate = new Date().toISOString();
+    
+    await writeData(data);
+    
+    res.json({ 
+      success: true, 
+      message: `Réponse ${forceCorrect ? 'validée' : 'invalidée'} pour ${username}`,
+      newTotalScore: calculateUserScore(username, data)
+    });
+  } catch (error) {
+    console.error('Erreur:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// Admin: Annuler un override de réponse
+app.post('/api/admin/remove-override', async (req, res) => {
+  const { password, username, questionId } = req.body;
+  const config = await readConfig();
+  
+  if (password !== config.adminPassword) {
+    return res.status(401).json({ error: 'Non autorisé' });
+  }
+  
+  try {
+    const data = await readData();
+    const answer = data.answers.find(a => 
+      a.username.toLowerCase() === username.toLowerCase() && 
+      a.questionId === questionId
+    );
+    
+    if (!answer) {
+      return res.status(404).json({ error: 'Réponse non trouvée' });
+    }
+    
+    // Retirer l'override
+    delete answer.overrideCorrect;
+    delete answer.overrideReason;
+    delete answer.overrideDate;
+    
+    await writeData(data);
+    
+    res.json({ 
+      success: true, 
+      message: `Override retiré pour ${username}`,
+      newTotalScore: calculateUserScore(username, data)
     });
   } catch (error) {
     console.error('Erreur:', error);
