@@ -761,8 +761,9 @@ app.get('/api/admin/player-stats/:username', async (req, res) => {
 // Admin: Statistiques globales par catégorie (tous les joueurs confondus)
 app.get('/api/admin/global-category-stats', async (req, res) => {
   const { password } = req.query;
+  const config = await readConfig();
   
-  if (password !== ADMIN_PASSWORD) {
+  if (password !== config.adminPassword) {
     return res.status(401).json({ error: 'Non autorisé' });
   }
   
