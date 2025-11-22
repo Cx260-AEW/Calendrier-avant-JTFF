@@ -37,7 +37,7 @@ const DEFAULT_CONFIG = {
   eveningHour: 23,                // Heure du message du soir
   eveningMinute: 0,               // Minute du message du soir
   discordWebhook: 'https://discord.com/api/webhooks/1437838332930560112/3ys2Itxs5xq5eoLt1Rck8yXaONi7YFUoTRSpm5ARnQdmrRSY3m0l704Gci4w0AR2YRqO',
-  adminPassword: 'ADMIN2025',
+  adminPassword: process.env.ADMIN_PASSWORD,
   openingHour: 8,                 // Heure d'ouverture quotidienne
   closingHour: 23,                // Heure de fermeture quotidienne
   closingMinute: 30               // Minute de fermeture (23h30)
