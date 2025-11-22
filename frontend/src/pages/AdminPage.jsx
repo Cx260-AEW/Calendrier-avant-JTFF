@@ -306,65 +306,6 @@ function AdminPage() {
     }
   };
 
-  // Ajuster les points bonus d'un joueur
-  const adjustBonusPoints = async (username, points, reason) => {
-    try {
-      const response = await fetch(`${API_URL}/api/admin/adjust-bonus-points`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          password: password,
-          username: username,
-          points: points,
-          reason: reason
-        })
-      });
-      
-      const result = await response.json();
-      
-      if (result.success) {
-        setMessage(`✅ ${result.message}`);
-        await loadPlayerStats(username);
-        await loadStats();
-      } else {
-        setMessage(`❌ ${result.error}`);
-      }
-    } catch (error) {
-      setMessage('❌ Erreur de connexion');
-    }
-    setTimeout(() => setMessage(''), 5000);
-  };
-
-  // Forcer une réponse comme correcte/incorrecte
-  const overrideAnswer = async (username, questionId, forceCorrect, reason) => {
-    try {
-      const response = await fetch(`${API_URL}/api/admin/override-answer`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          password: password,
-          username: username,
-          questionId: questionId,
-          forceCorrect: forceCorrect,
-          reason: reason
-        })
-      });
-      
-      const result = await response.json();
-      
-      if (result.success) {
-        setMessage(`✅ ${result.message}`);
-        await loadPlayerStats(username);
-        await loadStats();
-      } else {
-        setMessage(`❌ ${result.error}`);
-      }
-    } catch (error) {
-      setMessage('❌ Erreur de connexion');
-    }
-    setTimeout(() => setMessage(''), 5000);
-  };
-
   const loadGlobalCategoryStats = async () => {
     try {
       const response = await fetch(`${API_URL}/api/admin/global-category-stats?password=${password}`);
@@ -1037,114 +978,6 @@ function AdminPage() {
                     </div>
                   </div>
 
-                  {/* Ajuster les points */}
-                  <div style={{ 
-                    marginBottom: '32px',
-                    padding: '24px',
-                    background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                    borderRadius: '16px',
-                    color: 'white'
-                  }}>
-                    <h3 style={{ fontSize: '24px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      ⚖️ Ajuster les points
-                    </h3>
-                    <p style={{ marginBottom: '20px', opacity: 0.9, fontSize: '14px' }}>
-                      Pour gérer les réclamations et corriger les erreurs
-                    </p>
-                    
-                    <div style={{ display: 'grid', gap: '16px' }}>
-                      {/* Ajouter/Retirer points bonus */}
-                      <div style={{
-                        padding: '20px',
-                        background: 'rgba(255, 255, 255, 0.15)',
-                        borderRadius: '12px',
-                        backdropFilter: 'blur(10px)'
-                      }}>
-                        <h4 style={{ fontSize: '18px', marginBottom: '16px' }}>
-                          🎁 Points Bonus / Malus
-                        </h4>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-                          <button
-                            onClick={() => {
-                              const reason = prompt('Raison de l\'ajout (+1 point) :');
-                              if (reason) adjustBonusPoints(playerStats.username, 1, reason);
-                            }}
-                            style={{
-                              padding: '12px',
-                              background: '#10b981',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '8px',
-                              fontWeight: '600',
-                              cursor: 'pointer'
-                            }}
-                          >
-                            +1 Point
-                          </button>
-                          <button
-                            onClick={() => {
-                              const reason = prompt('Raison du retrait (-1 point) :');
-                              if (reason) adjustBonusPoints(playerStats.username, -1, reason);
-                            }}
-                            style={{
-                              padding: '12px',
-                              background: '#ef4444',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '8px',
-                              fontWeight: '600',
-                              cursor: 'pointer'
-                            }}
-                          >
-                            -1 Point
-                          </button>
-                        </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                          <button
-                            onClick={() => {
-                              const points = prompt('Nombre de points à ajouter :');
-                              if (points) {
-                                const reason = prompt('Raison :');
-                                if (reason) adjustBonusPoints(playerStats.username, parseInt(points), reason);
-                              }
-                            }}
-                            style={{
-                              padding: '8px',
-                              background: 'rgba(255, 255, 255, 0.2)',
-                              color: 'white',
-                              border: '1px solid rgba(255, 255, 255, 0.3)',
-                              borderRadius: '8px',
-                              fontSize: '13px',
-                              cursor: 'pointer'
-                            }}
-                          >
-                            Ajouter X points
-                          </button>
-                          <button
-                            onClick={() => {
-                              const points = prompt('Nombre de points à retirer :');
-                              if (points) {
-                                const reason = prompt('Raison :');
-                                if (reason) adjustBonusPoints(playerStats.username, -parseInt(points), reason);
-                              }
-                            }}
-                            style={{
-                              padding: '8px',
-                              background: 'rgba(255, 255, 255, 0.2)',
-                              color: 'white',
-                              border: '1px solid rgba(255, 255, 255, 0.3)',
-                              borderRadius: '8px',
-                              fontSize: '13px',
-                              cursor: 'pointer'
-                            }}
-                          >
-                            Retirer X points
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
                   {/* Réponses par jour */}
                   <div>
                     <h3 style={{ fontSize: '24px', marginBottom: '16px', color: '#667eea' }}>
@@ -1206,62 +1039,15 @@ function AdminPage() {
                                     })}
                                   </div>
                                 </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-end' }}>
-                                  <div style={{
-                                    padding: '8px 16px',
-                                    background: answer.isCorrect ? '#10b981' : '#ef4444',
-                                    color: 'white',
-                                    borderRadius: '20px',
-                                    fontSize: '24px',
-                                    fontWeight: '700'
-                                  }}>
-                                    {answer.isCorrect ? '✅' : '❌'}
-                                  </div>
-                                  {/* Boutons pour forcer la réponse */}
-                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: '100px' }}>
-                                    {!answer.isCorrect && (
-                                      <button
-                                        onClick={() => {
-                                          const reason = prompt('Raison de la validation :');
-                                          if (reason) overrideAnswer(playerStats.username, answer.questionId, true, reason);
-                                        }}
-                                        style={{
-                                          padding: '6px 10px',
-                                          background: '#10b981',
-                                          color: 'white',
-                                          border: 'none',
-                                          borderRadius: '6px',
-                                          fontSize: '11px',
-                                          fontWeight: '600',
-                                          cursor: 'pointer',
-                                          whiteSpace: 'nowrap'
-                                        }}
-                                      >
-                                        ✅ Valider
-                                      </button>
-                                    )}
-                                    {answer.isCorrect && (
-                                      <button
-                                        onClick={() => {
-                                          const reason = prompt('Raison de l\'invalidation :');
-                                          if (reason) overrideAnswer(playerStats.username, answer.questionId, false, reason);
-                                        }}
-                                        style={{
-                                          padding: '6px 10px',
-                                          background: '#ef4444',
-                                          color: 'white',
-                                          border: 'none',
-                                          borderRadius: '6px',
-                                          fontSize: '11px',
-                                          fontWeight: '600',
-                                          cursor: 'pointer',
-                                          whiteSpace: 'nowrap'
-                                        }}
-                                      >
-                                        ❌ Invalider
-                                      </button>
-                                    )}
-                                  </div>
+                                <div style={{
+                                  padding: '8px 16px',
+                                  background: answer.isCorrect ? '#10b981' : '#ef4444',
+                                  color: 'white',
+                                  borderRadius: '20px',
+                                  fontSize: '24px',
+                                  fontWeight: '700'
+                                }}>
+                                  {answer.isCorrect ? '✅' : '❌'}
                                 </div>
                               </div>
                             </div>
