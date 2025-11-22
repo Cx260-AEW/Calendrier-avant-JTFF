@@ -306,19 +306,19 @@ export const questions = [
   // ========================================
   // JOUR 6
   // ========================================
-  {
+   {
     id: 21,
     day: 6,
-    group: "🧭Navigation aérienne",
-    question: "Quelle unité utilise-t-on pour mesurer la vitesse du vent en aviation ?",
+    group: "☁️Météorologie",
+    question: "Que signifie « VRB » dans la partie « direction du vent » d'un METAR ?",
     options: [
-      "Km/h",
-      "M/s",
-      "Nœuds",
-      "Pieds/min"
+      "Vent variable",
+      "Vent très rapide",
+      "Rafales variables",
+      "Vent régulier"
     ],
-    correctAnswer: 2,
-    explanation: "💬1 nœud = 1 mille nautique par heure. \n 📚Source : OACI Annexe 5 – Unités de mesure."
+    correctAnswer: 0,
+    explanation: "💬VRB est la contraction de VARIABLE, VRB est annoncé lorsque le vent est inférieur à 3 kt et la direction varie d'au moins 60° sur 10 min, ou le vent est supérieur à 3 kt et la direction varie d'au moins 180° sur 10 min. \\n 📚Source : Météo-France"
   },
   {
     id: 22,
@@ -383,16 +383,16 @@ export const questions = [
   {
     id: 26,
     day: 7,
-    group: "🎧Contrôle aérien",
-    question: "Un QNH de 1013 hPa correspond à :",
+    group: "☁️Météorologie",
+    question: "Que représente « 9999 » dans la section visibilité d'un METAR européen ?",
     options: [
-      "Pression standard au niveau de la mer",
-      "Altitude pression",
-      "QFE de l'aérodrome",
-      "QFF corrigé"
+      "Visibilité inconnue",
+      "Visibilité supérieure ou égale à 10 km",
+      "Visibilité ≤ 999 m",
+      "Visibilité exactement 9999 m"
     ],
-    correctAnswer: 0,
-    explanation: "💬1013,25 hPa est la pression atmosphérique standard au niveau de la mer (ISA). \n 📚Source : OACI Annexe 3."
+    correctAnswer: 1,
+    explanation: "💬Le groupe « 9999 » indique que la visibilité est ≥ 10 km. \\n 📚Source : Météo-France"
   },
   {
     id: 27,
@@ -444,16 +444,16 @@ export const questions = [
   {
     id: 30,
     day: 8,
-    group: "🎧Contrôle aérien",
-    question: "Que signifie \"Roger\" ?",
+    group: "☁️Météorologie",
+    question: "Que signifie « CAVOK » dans un METAR ?",
     options: [
-      "J'ai reçu votre message",
-      "Je comprends",
-      "D'accord",
-      "Affirmatif"
+      "Il y a des nuages bas à moins de 500 ft",
+      "Visibilité ≥ 10 km, pas de nuage sous un certain seuil, pas de CB/TCU, pas de phénomènes significatifs",
+      "Pression anormalement haute",
+      "Un orage est en cours"
     ],
-    correctAnswer: 0,
-    explanation: "💬\"Roger\" signifie uniquement que le message a été reçu, pas nécessairement compris. \n 📚Source : OACI Annexe 10."
+    correctAnswer: 1,
+    explanation: "💬« CAVOK » signifie Ceiling And Visibility OK : visibilité ≥ 10 km, aucun nuage significatif sous la plus élevée des valeurs (5000ft AAL ou l'altitude minimale de secteur), pas de cumulonimbus ou towering cumulus, pas de temps présent significatif. \\n 📚Source : OACI."
   },
   {
     id: 31,
@@ -520,16 +520,16 @@ export const questions = [
   {
     id: 35,
     day: 9,
-    group: "📜Réglementation",
-    question: "En Europe, Le vol à vue (VFR) est interdit :",
+    group: "☁️Météorologie",
+    question: "Dans un METAR, comment est codé un vent « venant du 360° soufflant à 20 kt, variant entre 320° et 040° » ?",
     options: [
-      "Au-dessus du FL195",
-      "Au-dessus du FL245",
-      "En dessous du FL50",
-      "Dans les CTR"
+      "36020KT 320V040",
+      "36020KT VRB",
+      "36020KT D320 040",
+      "36020KT 040V320"
     ],
     correctAnswer: 0,
-    explanation: "💬Le FL195 marque la limite supérieure du VFR dans l'espace aérien supérieur (classe A). \n 📚Source : SERA.5005."
+    explanation: "💬Le groupe « 36020KT » signifie vent venant du 360° à 20 kt. Le « 320V040 » indique que la direction du vent varie entre 320° et 040°. \\n 📚Source : OACI Doc 8896."
   },
   {
     id: 36,
@@ -687,16 +687,16 @@ export const questions = [
   {
     id: 46,
     day: 12,
-    group: "🎧Contrôle aérien",
-    question: "L'approche (APP) gère :",
+    group: "☁️Météorologie",
+    question: "Que signifie l'abréviation « NSC » dans la section « Nuages » d'un METAR ?",
     options: [
-      "Les départs",
-      "Les arrivées et départs dans la TMA",
-      "Les vols en route",
-      "Le sol uniquement"
+      "No Significant Clouds – pas de nuage avec base inférieure à la hauteur du CAVOK, ni CB, ni TCU",
+      "Nuage Significatif Couvert",
+      "Null Sky Condition – ciel entièrement libre",
+      "Non-Serviceable Clouds – nuages non mesurables"
     ],
-    correctAnswer: 1,
-    explanation: "💬APP coordonne les arrivées et départs dans la zone terminale (TMA). \n 📚Source : OACI Annexe 11."
+    correctAnswer: 0,
+    explanation: "💬« NSC » est utilisé lorsque aucun nuage significatif (avec base sous le seuil fixé, pas de CB, pas de TCU) n'est observé. \\n 📚Source : OACI Doc 8896."
   },
   {
     id: 47,
@@ -775,16 +775,16 @@ export const questions = [
   {
     id: 52,
     day: 13,
-    group: "🗺️ Cartes aéronautiques",
-    question: "Le relief est indiqué sur une carte par :",
+    group: "☁️Météorologie",
+    question: "Parmi les trois principaux réseaux qui permettent la description et la prévision météorologiques en aéronautique, lequel ne fait pas partie de la liste ?",
     options: [
-      "Des lignes de niveau et des couleurs",
-      "Des chiffres uniquement",
-      "Des zones ombrées",
-      "Des cercles rouges"
+      "Le réseau de surface (stations terrestres)",
+      "Le réseau en altitude (radiosondages)",
+      "Le réseau orbital (satellites)",
+      "Le réseau sous-marin (capteurs océaniques)"
     ],
-    correctAnswer: 0,
-    explanation: "💬Les dégradés de couleur représentent les altitudes du terrain. \n 📚Source : OACI Annexe 4 ; IGN."
+    correctAnswer: 3,
+    explanation: "💬Les trois réseaux sont : le réseau de surface, le réseau en altitude, le réseau orbital. Le réseau sous-marin n'est pas utilisé pour la météorologie aéronautique. \\n 📚Source : Météo-France."
   },
 
   // ========================================
@@ -821,16 +821,16 @@ export const questions = [
   {
     id: 55,
     day: 14,
-    group: "📜Réglementation",
-    question: "En classe C, les vols VFR :",
+    group: "☁️Météorologie",
+    question: "Le message SPECI est un message météorologique spécial sur un aérodrome. Il est émis :",
     options: [
-      "Reçoivent des informations de trafic",
-      "Reçoivent une clearance uniquement",
-      "Reçoivent une clearance et des informations de trafic",
-      "Volent sans contact radio"
+      "Toutes les heures automatiquement",
+      "Uniquement lorsque des conditions significatives changent entre deux METAR",
+      "Chaque minute pendant une tempête",
+      "Lorsqu'il y a du brouillard uniquement"
     ],
-    correctAnswer: 2,
-    explanation: "💬En classe C, le VFR reçoit une clearance et des informations de trafic. \n 📚Source : OACI Annexe 11."
+    correctAnswer: 1,
+    explanation: "💬Le SPECI est un complément au METAR lorsqu'un changement significatif du temps intervient entre la diffusion de deux METAR. \\n 📚Source : Météo-France."
   },
   {
     id: 56,
@@ -853,16 +853,16 @@ export const questions = [
   {
     id: 57,
     day: 15,
-    group: "🧭Navigation aérienne",
-    question: "Un plan de vol VFR doit inclure :",
+    group: "☁️Météorologie",
+    question: "Concernant la carte TEMSI (temps significatif), lequel des éléments suivants est représenté ?",
     options: [
-      "La route prévue",
-      "Les coordonnées GPS exactes",
-      "Le nom du contrôleur",
-      "Le type de balises uniquement"
+      "Vent et température uniquement à l'altitude FL450",
+      "Fronts, nébulosité, visibilité, masse nuageuse, etc. pour l'aéronautique",
+      "Précipitations en format vidéo seulement",
+      "Carte locale d'un aérodrome uniquement"
     ],
-    correctAnswer: 0,
-    explanation: "💬Le plan de vol décrit la route, l'altitude, la vitesse et les prévisions de temps de vol. \n 📚Source : SERA.4001."
+    correctAnswer: 1,
+    explanation: "💬La carte TEMSI est une carte du « temps significatif » prévu à heure fixe, sur laquelle sont portés des phénomènes intéressants pour l'aéronautique : masses nuageuses, visibilité, fronts, etc. \\n 📚Source : Météo-France."
   },
   {
     id: 58,
@@ -941,16 +941,16 @@ export const questions = [
   {
     id: 63,
     day: 16,
-    group: "📜Réglementation",
-    question: "En classe F, les vols VFR :",
+    group: "☁️Météorologie",
+    question: "Sur la carte WINTEM (Wind and Temperature), la direction du vent est représentée :",
     options: [
-      "Reçoivent une clearance",
-      "Reçoivent des informations de trafic si possible",
-      "Sont interdits",
-      "Doivent déposer un plan de vol"
+      "Par des flèches pointant vers la zone de haute pression",
+      "Par des hampe/barbules pointant toujours vers la zone de basse pression",
+      "Par des barres horizontales uniquement",
+      "Par des cercles remplis uniquement"
     ],
     correctAnswer: 1,
-    explanation: "💬En classe F (non contrôlée), le service de trafic fournit des informations si possible. \n 📚Source : OACI Annexe 11."
+    explanation: "💬La direction du vent est représentée par une hampe, et les barbules renseignent sur sa force. Ces hampe/barbules pointent toujours vers la zone de basse pression (dans l'hémisphère nord). \\n 📚Source : Météo-France."
   },
   {
     id: 64,
@@ -987,16 +987,16 @@ export const questions = [
   {
     id: 66,
     day: 17,
-    group: "🎧Contrôle aérien",
-    question: "Le QFE correspond à :",
+    group: "☁️Météorologie",
+    question: "Le sigle ATIS (Automatic Terminal Information Service) fournit aux pilotes, parmi d'autres, les informations suivantes :",
     options: [
-      "Pression au niveau de la mer",
-      "Pression à l'altitude de l'aérodrome",
-      "Pression standard",
-      "Température au sol"
+      "Conditions météo, vent, nuages, visibilité, pressions de l'aérodrome",
+      "Position exacte de tous les avions dans l'aéroport",
+      "Menu des restaurants de l'aéroport",
+      "Statistiques de retard de tous les vols avec plus de 24 h"
     ],
-    correctAnswer: 1,
-    explanation: "💬QFE donne l'altitude 0 au seuil de piste. \n 📚Source : OACI Annexe 5."
+    correctAnswer: 0,
+    explanation: "💬L'ATIS fournit, entre autres, les informations météorologiques utiles au décollage et à l'atterrissage : vent, nuages, visibilité, températures, pressions, et autres renseignements météorologiques significatifs ainsi que les informations de pistes, procédures de départ et d'arrivée. \\n 📚Source : OACI Annexe 11."
   },
   {
     id: 67,
@@ -1076,16 +1076,16 @@ export const questions = [
   {
     id: 72,
     day: 18,
-    group: "🗺️ Cartes aéronautiques",
-    question: "Un aérodrome fermé est identifié par :",
+    group: "☁️Météorologie",
+    question: "Quelle est la température standard au niveau de la mer selon l'ISA ?",
     options: [
-      "Un cercle noir avec une croix",
-      "Un carré bleu",
-      "Un point rouge",
-      "Un triangle"
+      "0 °C",
+      "10 °C",
+      "15 °C",
+      "20 °C"
     ],
-    correctAnswer: 0,
-    explanation: "💬Symbole d'un terrain désaffecté. \n 📚Source : Légende carte OACI France."
+    correctAnswer: 2,
+    explanation: "💬L'atmosphère normalisée (ISA) définit que la température au niveau de la mer est de 15 °C. \\n 📚Source : OACI Annexe 5."
   },
 
   // ========================================
@@ -1094,16 +1094,16 @@ export const questions = [
   {
     id: 73,
     day: 19,
-    group: "🧭Navigation aérienne",
-    question: "Le \"Track\" affiché sur le GPS représente :",
+    group: "☁️Météorologie",
+    question: "Quelle est la pression standard au niveau de la mer dans l'ISA ?",
     options: [
-      "Le cap suivi",
-      "La route",
-      "Le vent",
-      "La direction du compas"
+      "1000 hPa",
+      "1013,25 hPa",
+      "30.00 Inhg",
+      "980 hPa"
     ],
     correctAnswer: 1,
-    explanation: "💬Le \"track\" tient compte du vent et montre la trajectoire sol. \n 📚Source : OACI Doc 9613."
+    explanation: "💬L'ISA fixe la pression normale au niveau de la mer à 1013,25 hPa afin d'avoir une référence commune pour les aéronefs et instruments. \\n 📚Source : OACI Annexe 5."
   },
   {
     id: 74,
@@ -1122,16 +1122,16 @@ export const questions = [
   {
     id: 75,
     day: 19,
-    group: "📜Réglementation",
-    question: "La TMA (Terminal Control Area) est :",
+    group: "☁️Météorologie",
+    question: "Selon le modèle ISA, de combien la température diminue-t-elle tous les 1000 ft sous la tropopause (valeur arrondie) ?",
     options: [
-      "Un espace contrôlé établi autour des grands aérodromes",
-      "Une zone militaire",
-      "Un espace non contrôlé",
-      "Une zone d'attente"
+      "1 °C",
+      "2 °C",
+      "3 °C",
+      "4 °C"
     ],
-    correctAnswer: 0,
-    explanation: "💬La TMA entoure un ou plusieurs aérodromes importants. \n 📚Source : OACI Annexe 11."
+    correctAnswer: 1,
+    explanation: "💬L'atmosphère standard prévoit une décroissance typique d'environ 6,5 °C tous les 1000 m, ce qui correspond à environ 2 °C tous les 1000 ft. \\n 📚Source : OACI Annexe 5."
   },
   {
     id: 76,
@@ -1288,16 +1288,16 @@ export const questions = [
   {
     id: 86,
     day: 22,
-    group: "🎧Contrôle aérien",
-    question: "\"Vacate runway\" signifie :",
+    group: "☁️Météorologie",
+    question: "Si un avion est à 11 000 ft avec une température de l'air extérieure (OAT) de −4 °C, quelle est la valeur arrondie du ΔISA (Delta ISA) ?",
     options: [
-      "Dégagez la piste",
-      "Arrêtez-vous sur la piste",
-      "Alignez-vous",
-      "Roulez lentement"
+      "+3 °C",
+      "+2 °C",
+      "−3 °C",
+      "−2 °C"
     ],
     correctAnswer: 0,
-    explanation: "💬Instruction de libérer la piste dès que possible. \n 📚Source : OACI Doc 4444."
+    explanation: "💬Calcul : ISA à 11000ft = 15 − ((2 × 11000) / 1000) = −7°C. ΔISA = OAT − ISA = (−4) − (−7) = +3°C. \\n 📚Source : OACI Annexe 5."
   },
   {
     id: 87,
@@ -1376,16 +1376,16 @@ export const questions = [
   {
     id: 92,
     day: 23,
-    group: "🗺️ Cartes aéronautiques",
-    question: "Les points de report VFR sont identifiés par :",
+    group: "☁️Météorologie",
+    question: "Pourquoi utilise-t-on un modèle d'atmosphère standard comme l'ISA ?",
     options: [
-      "Une lettre dans un cercle à fond blanc et contour noir",
-      "Des chiffres",
-      "Des symboles météo",
-      "Des fréquences"
+      "Pour prévoir exactement la météo locale",
+      "Pour calibrer les instruments et fournir une référence commune pour les performances des aéronefs",
+      "Pour déterminer la visibilité sur piste",
+      "Pour établir les horaires de vol"
     ],
-    correctAnswer: 0,
-    explanation: "💬Ces points géographiques servent aux reports radio des pilotes VFR. \n 📚Source : AIP France AD 2."
+    correctAnswer: 1,
+    explanation: "💬L'atmosphère standard permet de s'affranchir des variations de pression et température selon le lieu et le temps, et sert notamment à calibrer des instruments de vol et à donner une référence pour les performances des aéronefs. \\n 📚Source : OACI Annexe 5."
   },
 
   // ========================================
