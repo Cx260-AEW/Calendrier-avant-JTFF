@@ -218,14 +218,14 @@ export const questions = [
     id: 15,
     day: 4,
     group: "📜Réglementation",
-    question: "En France il est recommandé de déposer un plan de vol VFR :",
+    question: "En France il est obligatoire de déposer un plan de vol VFR :",
     options: [
-      "Uniquement pour les vols internationaux",
+      "les vols internationaux",
       "Pour tout vol dépassant 30 km",
-      "Pour les vols de plus de 100 km ou franchissant une frontière",
+      "Pour les vols de plus de 100 km",
       "Pour tous les vols VFR"
     ],
-    correctAnswer: 2,
+    correctAnswer: 0,
     explanation: "💬La DGAC recommande le dépôt de plan de vol pour tout vol de plus de 100 km. \n 📚Source : DGAC."
   },
   {
@@ -292,7 +292,7 @@ export const questions = [
     id: 20,
     day: 5,
     group: "🗺️ Cartes aéronautiques",
-    question: "Un aérodrome non contrôlé est indiqué par :",
+    question: "Un aérodrome n'ayant pas de piste en dur et indiquer par :",
     options: [
       "Un cercle bleu vide",
       "Un cercle bleu plein",
@@ -431,14 +431,14 @@ export const questions = [
     id: 29,
     day: 8,
     group: "🧭Navigation aérienne",
-    question: "La vitesse indiquée (IAS) ne tient pas compte :",
+    question: "La vitesse indiquée (IAS) tient compte :",
     options: [
       "De la densité de l'air",
       "De la température",
       "De la pression",
       "Du vent"
     ],
-    correctAnswer: 0,
+    correctAnswer: 2,
     explanation: "💬L'IAS dépend de la pression dynamique mais pas de la densité réelle. \n 📚Source : OACI Doc 8168."
   },
   {
@@ -581,9 +581,9 @@ export const questions = [
     id: 39,
     day: 10,
     group: "📜Réglementation",
-    question: "L'équipement obligatoire pour un vol VFR de jour inclut :",
+    question: "L'équipement obligatoire pour un vol VFR de jour dans un espace aerien controlée inclut :",
     options: [
-      "Un extincteur",
+      "Une tablette",
       "Une radio VHF",
       "Des feux de navigation",
       "Un GPS"
@@ -896,9 +896,9 @@ export const questions = [
     id: 60,
     day: 15,
     group: "🗺️ Cartes aéronautiques",
-    question: "Les fréquences ATIS et TWR figurent sur :",
+    question: "En UE, la fréquences ATIS figure sur :",
     options: [
-      "La carte VAC",
+      "La cartes VAC",
       "La carte OACI",
       "Le METAR",
       "Le plan de vol"
@@ -1034,13 +1034,14 @@ export const questions = [
   {
     id: 69,
     day: 18,
-    group: "🧭Navigation aérienne",
-    question: "Le GPS donne directement :",
+    group: "🗺️ Cartes aéronautiques",
+    image: true,
+    question: "Quel sont les limites vertical de ce secteur d'activitée,",
     options: [
-      "La route vraie",
-      "Le cap magnétique",
-      "La vitesse indiquée",
-      "La route compas"
+      "3000Ft AMSL / 4000Ft AMSL",
+      "500Ft AMSL / 8000Ft AMSL",
+      "2000Ft AMSL / FL 055",
+      "pas de restriction"
     ],
     correctAnswer: 0,
     explanation: "💬Le GPS fournit la position géographique et la route vraie entre deux points. \n 📚Source : OACI Doc 9613."
@@ -1169,9 +1170,9 @@ export const questions = [
     id: 78,
     day: 20,
     group: "🎧Contrôle aérien",
-    question: "Une instruction \"Hold short\" signifie :",
+    question: "Une instruction \"Hold short...\" signifie :",
     options: [
-      "Arrêtez-vous avant la piste",
+      "Arrêtez-vous avant x",
       "Décollez immédiatement",
       "Roulez lentement",
       "Dégagez la piste"
@@ -1294,7 +1295,7 @@ export const questions = [
       "+3 °C",
       "+2 °C",
       "−3 °C",
-      "−2 °C"
+      "+19 °C"
     ],
     correctAnswer: 0,
     explanation: "💬Calcul : ISA à 11000ft = 15 − ((2 × 11000) / 1000) = −7°C. ΔISA = OAT − ISA = (−4) − (−7) = +3°C. \\n 📚Source : OACI Annexe 5."
@@ -1458,7 +1459,7 @@ export const questions = [
     question: "Quelle est la meilleure méthode pour corriger la dérive en vol VFR ?",
     options: [
       "Ajuster le cap de quelques degrés",
-      "Modifier l'altitude",
+      "Passer en \"TRK\" sur l'AP",
       "Changer la vitesse",
       "Couper le moteur et recalculer"
     ],
