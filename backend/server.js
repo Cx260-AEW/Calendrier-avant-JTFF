@@ -17,7 +17,7 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Fichiers de données
-const DATA_FILE = path.join(__dirname, 'data.json');
+const DATA_FILE = "/data/data.json";
 const CONFIG_FILE = path.join(__dirname, 'config.json');
 
 // Middleware
