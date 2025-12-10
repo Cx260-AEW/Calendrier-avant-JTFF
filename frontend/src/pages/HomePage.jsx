@@ -383,6 +383,18 @@ export default function HomePage() {
               </p>
             </div>
             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              <button onClick={() => navigate('/quiz')} style={{
+                padding: '12px 24px',
+                background: '#9b59b6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                fontSize: '1rem',
+                fontWeight: 'bold'
+              }}>
+                📝 Quiz
+              </button>
               <button onClick={goToLeaderboard} style={{
                 padding: '12px 24px',
                 background: '#3498db',
@@ -395,6 +407,18 @@ export default function HomePage() {
               }}>
                 🏆 Classement
               </button>
+              <button onClick={goToAdmin} style={{
+                padding: '12px 24px',
+                background: '#95a5a6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                fontSize: '1rem',
+                fontWeight: 'bold'
+              }}>
+                👨‍💼 Admin
+              </button>
               <button onClick={handleLogout} style={{
                 padding: '12px 24px',
                 background: '#e74c3c',
@@ -405,7 +429,7 @@ export default function HomePage() {
                 fontSize: '1rem',
                 fontWeight: 'bold'
               }}>
-                Déconnexion
+                🚪 Déconnexion
               </button>
             </div>
           </div>
