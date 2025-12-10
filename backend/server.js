@@ -297,8 +297,8 @@ async function sendMorningAnnouncement() {
   const content = `🎄 **CALENDRIER DE L'AVENT - JOUR ${currentDay}/25** 🎄\n\n` +
     `☀️ Bonjour à tous !\n\n` +
     `🎁 **4 nouvelles questions** sont maintenant disponibles !\n\n` +
-    `⏰ Vous avez jusqu'à **23h00** pour répondre !\n\n` +
-    `🏆 Les résultats seront annoncés ce soir à **23h** !\n\n` +
+    `⏰ Vous avez jusqu'à **00h00 loc** pour répondre !\n\n` +
+    `🏆 Les résultats seront annoncés ce soir à **00h** !\n\n` +
     `🔗 Rendez-vous sur le site : **https://calendrier-de-l-avant-jtff.netlify.app**`;
   
   await sendDiscordMessage(content);
@@ -359,7 +359,7 @@ async function sendEveningResults() {
     top3Text +
     statsText +
     answersText +
-    `\n🎁 Rendez-vous demain à **8h** pour 4 nouvelles questions !\n\n` +
+    `\n🎁 Rendez-vous demain à **9h loc** pour 4 nouvelles questions !\n\n` +
     `🔗 Site : **https://calendrier-de-l-avant-jtff.netlify.app**`;
   
   await sendDiscordMessage(content);
