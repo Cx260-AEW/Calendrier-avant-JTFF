@@ -644,7 +644,7 @@ export const questions = [
     question: "La limite inférieure d'un espace aérien est exprimée en :",
     options: [
       "Altitude (AMSL) ou hauteur (AGL)",
-      "Pieds uniquement",
+      "en MSA (minimum sector altitude)",
       "Niveaux de vol uniquement",
       "Mètres"
     ],
