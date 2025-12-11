@@ -295,7 +295,7 @@ async function sendMorningAnnouncement() {
   const themes = dayQuestions.map((q, i) => `${i + 1}. ${q.group}`).join('\n');
   
   const content = `🎄 **CALENDRIER DE L'AVENT - JOUR ${currentDay}/25** 🎄\n\n` +
-    `☀️ Bonjour à tous !\n\n` +
+    `☀️ Bonjour à tous ! @here \n\n` +
     `🎁 **4 nouvelles questions** sont maintenant disponibles !\n\n` +
     `⏰ Vous avez jusqu'à **00h00 loc** pour répondre !\n\n` +
     `🏆 Les résultats seront annoncés ce soir à **00h** !\n\n` +
@@ -355,7 +355,7 @@ async function sendEveningResults() {
   // Message final
   const content = `🎄 **CALENDRIER DE L'AVENT - JOUR ${currentDay}/25** 🎄\n\n` +
     `🌙 **Bonsoir à tous !**\n\n` +
-    `La journée est terminée ! Voici les résultats :\n\n` +
+    `@here La journée est terminée ! Voici les résultats :\n\n` +
     top3Text +
     statsText +
     answersText +
