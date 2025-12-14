@@ -836,9 +836,9 @@ export const questions = [
     id: 56,
     day: 14,
     group: "🗺️ Cartes aéronautiques",
-    question: "La hauteur d'un relief est indiquée sur une carte par :",
+    question: "l'altitude d'un relief est indiquée sur une carte par :",
     options: [
-      "Un point noir suivi de la hauteur",
+      "Un point noir suivi de l'altitude",
       "Un listing en bas de carte",
       "Des carrés rouges",
       "Des flèches jaunes"
