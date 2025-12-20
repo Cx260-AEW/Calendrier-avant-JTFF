@@ -1163,7 +1163,7 @@ export const questions = [
       "Se repérer grâce aux repères visuels au sol et à la carte aéronautique",
       "Naviguer en utilisant exclusivement le GPS"
     ],
-    correctAnswer: 0,
+    correctAnswer: 2,
     explanation: "💬La navigation à vue (VFR) repose sur l’observation directe du terrain : le pilote identifie des repères visuels (routes, rivières, villages, reliefs, etc.) et les confronte à la carte aéronautique pour suivre sa route. \n 📚Source : OACI – Annexe 2, Règles de l’air & Manuel de pilotage VFR"
   },
   {
