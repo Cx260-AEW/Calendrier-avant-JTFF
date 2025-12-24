@@ -694,6 +694,56 @@ app.get('/api/admin/day-stats/:day', async (req, res) => {
   res.json(dayStats);
 });
 
+// Obtenir les stats globales par catégorie
+app.get('/api/admin/global-category-stats', async (req, res) => {
+  const data = await readData();
+  
+  // Grouper toutes les questions par catégorie
+  const categoryStats = {};
+  
+  questions.forEach(question => {
+    const category = question.group;
+    if (!categoryStats[category]) {
+      categoryStats[category] = {
+        totalQuestions: 0,
+        totalAnswers: 0,
+        correctAnswers: 0
+      };
+    }
+    
+    categoryStats[category].totalQuestions++;
+    
+    // Compter les réponses pour cette question
+    const questionAnswers = data.answers.filter(a => a.questionId === question.id);
+    categoryStats[category].totalAnswers += questionAnswers.length;
+    
+    // Compter les réponses correctes
+    const correctAnswersCount = questionAnswers.filter(a => {
+      // Vérifier s'il y a un override
+      if (a.overrideCorrect !== undefined) {
+        return a.overrideCorrect === true;
+      }
+      return a.answer === question.correctAnswer;
+    }).length;
+    
+    categoryStats[category].correctAnswers += correctAnswersCount;
+  });
+  
+  // Calculer les pourcentages
+  const categoryPercentages = {};
+  Object.keys(categoryStats).forEach(category => {
+    const stats = categoryStats[category];
+    categoryPercentages[category] = {
+      totalQuestions: stats.totalQuestions,
+      totalAnswers: stats.totalAnswers,
+      correctAnswers: stats.correctAnswers,
+      successRate: stats.totalAnswers > 0 ? Math.round((stats.correctAnswers / stats.totalAnswers) * 100) : 0
+    };
+  });
+  
+  res.json(categoryPercentages);
+});
+
 // Obtenir les stats détaillées d'un joueur
 app.get('/api/admin/player-stats/:username', async (req, res) => {
   const username = req.params.username;
