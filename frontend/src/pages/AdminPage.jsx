@@ -306,6 +306,16 @@ function AdminPage() {
     }
   };
 
+  const loadGlobalCategoryStats = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/admin/global-category-stats`);
+      const data = await response.json();
+      setGlobalCategoryStats(data);
+    } catch (error) {
+      console.error('Erreur:', error);
+    }
+  };
+
   // Ajuster les points bonus d'un joueur
   const adjustBonusPoints = async (username, points, reason) => {
     try {
@@ -685,18 +695,18 @@ function AdminPage() {
           )}
 
           {/* Statistiques globales par catégorie */}
-          {globalCategoryStats && globalCategoryStats.categoryStats && (
+          {globalCategoryStats && Object.keys(globalCategoryStats).length > 0 && (
             <div className="card" style={{ marginTop: '32px' }}>
               <h2 style={{ fontSize: '32px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
                 📊 Statistiques Globales par Catégorie
               </h2>
               <p style={{ fontSize: '18px', color: '#6b7280', marginBottom: '24px' }}>
-                👥 Performance de tous les {globalCategoryStats.totalParticipants} participants confondus
+                📈 Performance de tous les participants confondus
               </p>
               
               <div style={{ display: 'grid', gap: '16px' }}>
-                {Object.entries(globalCategoryStats.categoryStats).sort((a, b) => b[1].percentage - a[1].percentage).map(([category, stats], index) => {
-                  const percentage = stats.percentage;
+                {Object.entries(globalCategoryStats).sort((a, b) => b[1].successRate - a[1].successRate).map(([category, stats], index) => {
+                  const percentage = stats.successRate;
                   const getColor = () => {
                     if (percentage >= 75) return '#10b981';
                     if (percentage >= 50) return '#f59e0b';
@@ -750,7 +760,7 @@ function AdminPage() {
                       </div>
                       
                       {/* Détails */}
-                      <div style={{ display: 'flex', gap: '24px', fontSize: '14px' }}>
+                      <div style={{ display: 'flex', gap: '24px', fontSize: '14px', flexWrap: 'wrap' }}>
                         <div>
                           <span style={{ color: '#6b7280' }}>Bonnes réponses : </span>
                           <span style={{ fontWeight: '700', color: '#10b981' }}>{stats.correctAnswers}</span>
@@ -758,10 +768,6 @@ function AdminPage() {
                         <div>
                           <span style={{ color: '#6b7280' }}>Mauvaises réponses : </span>
                           <span style={{ fontWeight: '700', color: '#ef4444' }}>{stats.totalAnswers - stats.correctAnswers}</span>
-                        </div>
-                        <div>
-                          <span style={{ color: '#6b7280' }}>Taux de participation : </span>
-                          <span style={{ fontWeight: '700', color: '#667eea' }}>{stats.participationRate}%</span>
                         </div>
                       </div>
                     </div>
