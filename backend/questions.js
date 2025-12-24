@@ -1044,7 +1044,7 @@ export const questions = [
       "pas de restriction"
     ],
     correctAnswer: 0,
-    explanation: "💬Le GPS fournit la position géographique et la route vraie entre deux points. \n 📚Source : OACI Doc 9613."
+    explanation: "La zonne en question et une zonne de voltige conme indiquer dans La legande des cartes VAC ensuite, la bonne reponce se trouve dans l'eAIP France, ENR 5.5   ACTIVITES AERIENNES SPORTIVES ET RECREATIVES."
   },
   {
     id: 70,
