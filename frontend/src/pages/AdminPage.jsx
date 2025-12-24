@@ -375,16 +375,6 @@ function AdminPage() {
     setTimeout(() => setMessage(''), 5000);
   };
 
-  const loadGlobalCategoryStats = async () => {
-    try {
-      const response = await fetch(`${API_URL}/api/admin/global-category-stats?password=${password}`);
-      const data = await response.json();
-      setGlobalCategoryStats(data);
-    } catch (error) {
-      console.error('Erreur:', error);
-    }
-  };
-
   // Page de connexion
   if (!isAuthenticated) {
     return (
