@@ -4,6 +4,7 @@ import LoginPage from './pages/LoginPage';
 import QuizPage from './pages/QuizPage';
 import LeaderboardPage from './pages/LeaderboardPage';
 import AdminPage from './pages/AdminPage';
+import StatsPage from './pages/StatsPage';
 import { API_URL } from './config';
 
 function App() {
@@ -55,12 +56,18 @@ function App() {
                   <span style={{ fontSize: '18px', fontWeight: '600' }}>👤 {user.username}</span>
                   <span className="score-badge" style={{ marginLeft: '16px' }}>⭐ {score} points</span>
                 </div>
-                <div style={{ display: 'flex', gap: '12px' }}>
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                   <Link to="/">
                     <button className="btn btn-secondary">📝 Quiz</button>
                   </Link>
                   <Link to="/leaderboard">
                     <button className="btn btn-secondary">🏆 Classement</button>
+                  </Link>
+                  <Link to="/stats">
+                    <button className="btn btn-secondary">📊 Mes Stats</button>
+                  </Link>
+                  <Link to="/admin">
+                    <button className="btn btn-secondary" style={{ background: '#e5e7eb', color: '#6b7280' }}>👨‍💼 Admin</button>
                   </Link>
                   <button className="btn btn-secondary" onClick={logout}>🚪 Déconnexion</button>
                 </div>
@@ -75,6 +82,7 @@ function App() {
             element={user ? <QuizPage user={user} score={score} setScore={setScore} /> : <LoginPage onLogin={loadUser} />} 
           />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
+          <Route path="/stats" element={user ? <StatsPage user={user} /> : <LoginPage onLogin={loadUser} />} />
           <Route path="/admin" element={<AdminPage />} />
         </Routes>
       </div>
