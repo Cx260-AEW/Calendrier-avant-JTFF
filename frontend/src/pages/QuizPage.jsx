@@ -104,7 +104,7 @@ function QuizPage({ user, score, setScore }) {
   }
 
   // Vérifier si le calendrier est terminé (après le 25 décembre)
-  if (currentDay > 25) {
+  if (questions.length === 100) {
     return (
       <div className="container">
         <div className="card" style={{ textAlign: 'center', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: 'white' }}>
