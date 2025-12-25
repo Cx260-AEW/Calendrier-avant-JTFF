@@ -1477,22 +1477,22 @@ export const questions = [
       "Une demande d'information",
       "Un changement de fréquence"
     ],
-    correctAnswer: 0,
+    correctAnswer: 2,
     explanation: "💬\"Mayday\" signale une situation de détresse immédiate (danger grave et imminent). \n 📚Source : OACI Annexe 10."
   },
   {
     id: 99,
     day: 25,
     group: "📜Réglementation",
-    question: "Un espace aérien FIR (Flight Information Region) fournit :",
+    question: "selon les propositions suivantes, dans quel cas un contrôleur doit-il obligatoirement fournir une séparation radar entre deux aéronefs en espace aérien contrôlé ? :",
     options: [
-      "Des services d'information de vol et d'alerte",
-      "Des clearances uniquement",
-      "Des séparations radar",
-      "Des autorisations de décollage"
+      "Entre deux VFR en classe A",
+      "Entre un IFR et un VFR en classe D",
+      "Entre deux IFR en classe C",
+      "Entre un VFR et un VFR spécial en classe G"
     ],
     correctAnswer: 0,
-    explanation: "💬La FIR couvre une région où sont assurés les services d'information de vol et d'alerte. \n 📚Source : OACI Annexe 11."
+    explanation: "Selon les principes définis par l’OACI, la classe C impose une séparation ATC entre tous les vols IFR, ainsi qu’entre les vols IFR et VFR. En revanche, les vols VFR entre eux ne bénéficient que d’une information de trafic, sans séparation obligatoire. Les autres propositions concernent soit des espaces où la séparation n’est pas requise, soit des cas sans service de contrôle."
   },
   {
     id: 100,
