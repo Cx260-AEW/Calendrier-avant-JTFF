@@ -103,6 +103,31 @@ function QuizPage({ user, score, setScore }) {
     );
   }
 
+  // Vérifier si le calendrier est terminé (après le 25 décembre)
+  if (currentDay > 25) {
+    return (
+      <div className="container">
+        <div className="card" style={{ textAlign: 'center', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: 'white' }}>
+          <div style={{ fontSize: '72px', marginBottom: '16px' }}>🎉</div>
+          <h2 style={{ fontSize: '32px', marginBottom: '16px' }}>Le Calendrier de l'Avent est terminé !</h2>
+          <p style={{ fontSize: '20px', marginBottom: '24px', opacity: 0.95 }}>
+            Merci à tous pour votre participation ! 🎄✨
+          </p>
+          <p style={{ fontSize: '18px', opacity: 0.9 }}>
+            Vous avez répondu à <strong>{Object.keys(userAnswers).length}/100</strong> questions
+          </p>
+          <p style={{ fontSize: '18px', marginTop: '8px', opacity: 0.9 }}>
+            Score final : <strong>{score} points</strong> 🏆
+          </p>
+          <div style={{ marginTop: '32px', padding: '20px', background: 'rgba(255,255,255,0.15)', borderRadius: '12px' }}>
+            <p style={{ fontSize: '16px', marginBottom: '12px' }}>📊 Consultez vos statistiques détaillées</p>
+            <p style={{ fontSize: '16px' }}>🏆 Voir le classement final</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (questions.length === 0) {
     return (
       <div className="container">
