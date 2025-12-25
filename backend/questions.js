@@ -1477,7 +1477,7 @@ export const questions = [
       "Une demande d'information",
       "Un changement de fréquence"
     ],
-    correctAnswer: 2,
+    correctAnswer: 0,
     explanation: "💬\"Mayday\" signale une situation de détresse immédiate (danger grave et imminent). \n 📚Source : OACI Annexe 10."
   },
   {
@@ -1491,7 +1491,7 @@ export const questions = [
       "Entre deux IFR en classe C",
       "Entre un VFR et un VFR spécial en classe G"
     ],
-    correctAnswer: 0,
+    correctAnswer: 2,
     explanation: "Selon les principes définis par l’OACI, la classe C impose une séparation ATC entre tous les vols IFR, ainsi qu’entre les vols IFR et VFR. En revanche, les vols VFR entre eux ne bénéficient que d’une information de trafic, sans séparation obligatoire. Les autres propositions concernent soit des espaces où la séparation n’est pas requise, soit des cas sans service de contrôle."
   },
   {
