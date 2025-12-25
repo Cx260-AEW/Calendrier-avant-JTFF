@@ -744,6 +744,31 @@ app.get('/api/admin/global-category-stats', async (req, res) => {
   res.json(categoryPercentages);
 });
 
+// Export du classement en CSV
+app.get('/api/export/leaderboard', async (req, res) => {
+  try {
+    const data = await readData();
+    const leaderboard = getLeaderboard(data);
+    
+    // Créer le CSV
+    let csv = 'Rang,Pseudo,Score,Questions Répondues,Taux de Réussite\n';
+    
+    leaderboard.forEach((user, index) => {
+      const rank = index + 1;
+      const successRate = user.answersCount > 0 ? Math.round((user.score / user.answersCount) * 100) : 0;
+      csv += `${rank},"${user.username}",${user.score},${user.answersCount},${successRate}%\n`;
+    });
+    
+    // Envoyer le fichier
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename=classement.csv');
+    res.send('\uFEFF' + csv); // BOM pour UTF-8
+  } catch (error) {
+    console.error('Erreur export:', error);
+    res.status(500).json({ error: 'Erreur lors de l\'export' });
+  }
+});
+
 // Obtenir les stats détaillées d'un joueur
 app.get('/api/admin/player-stats/:username', async (req, res) => {
   const username = req.params.username;
