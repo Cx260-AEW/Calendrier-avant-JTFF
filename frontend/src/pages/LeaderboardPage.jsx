@@ -28,6 +28,10 @@ function LeaderboardPage() {
     return medals[index] || `${index + 1}.`;
   };
 
+  const handleExport = () => {
+    window.open(`${API_URL}/api/export/leaderboard`, '_blank');
+  };
+
   if (loading) {
     return (
       <div className="container">
@@ -80,12 +84,18 @@ function LeaderboardPage() {
           </div>
         )}
 
-        <div style={{ marginTop: '32px', textAlign: 'center' }}>
+        <div style={{ marginTop: '32px', textAlign: 'center', display: 'flex', gap: '12px', justifyContent: 'center' }}>
           <button 
             className="btn btn-secondary" 
             onClick={loadLeaderboard}
           >
             🔄 Actualiser
+          </button>
+          <button 
+            className="btn btn-primary" 
+            onClick={handleExport}
+          >
+            📥 Exporter en Excel
           </button>
         </div>
       </div>
